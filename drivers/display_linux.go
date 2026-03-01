@@ -1,4 +1,4 @@
-package main
+package drivers
 
 import (
 	"os"
@@ -20,12 +20,12 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 }
 
 func (d *Display) DrawPixel(vx, vy int32, c []byte) {
-	scaleX, scaleY := sW/vW, sH/vH
+	scaleX, scaleY := SW/VW, SH/VH
 	for py := 0; py < scaleY; py++ {
 		for px := 0; px < scaleX; px++ {
 			rx, ry := int(vx)*scaleX+px, int(vy)*scaleY+py
-			if rx < sW && ry < sH {
-				offset := (ry*sW + rx) * 4
+			if rx < SW && ry < SH {
+				offset := (ry*SW + rx) * 4
 				copy(d.pixels[offset:offset+4], c)
 			}
 		}

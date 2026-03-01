@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"apodeiktikos.com/fbtest/drivers"
 	"apodeiktikos.com/fbtest/model"
 )
 
@@ -41,11 +42,6 @@ func LoadPNG(path string) (*model.Sprite, error) {
 	return &model.Sprite{W: w, H: h, Pixels: pixels}, nil
 }
 
-const (
-	vW, vH = 320, 200
-	sW, sH = 640, 480
-)
-
 const targetFPS = 30
 const frameDelay = time.Second / targetFPS
 
@@ -59,9 +55,9 @@ func LoadFontConfig(path string) error {
 	return json.Unmarshal(data, &fuenteMapa)
 }
 
-func DrawString(display *Display, sprite *model.Sprite, text string, x, y int32) {
+func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, y int32) {
 	cursorX := x
-	letras, ok := fuenteMapa["letters"]
+	letras, ok := fuenteMapa["boldLetters"]
 	if !ok {
 		return // No existe la sección "letters" en el JSON
 	}
@@ -79,7 +75,7 @@ func DrawString(display *Display, sprite *model.Sprite, text string, x, y int32)
 	}
 }
 
-func DrawSprite(display *Display, sprite *model.Sprite, sectionName string, name string) {
+func DrawSprite(display *drivers.Display, sprite *model.Sprite, sectionName string, name string) {
 
 	section, ok := fuenteMapa[sectionName]
 	if !ok {
@@ -94,18 +90,8 @@ func DrawSprite(display *Display, sprite *model.Sprite, sectionName string, name
 	display.DrawSpriteRect(sprite, rect, 100, 100)
 }
 
-func (d *Display) FillRect(rect model.Rect, color []byte) {
-	for y := 0; y < rect.Size.H; y++ {
-		for x := 0; x < rect.Size.W; x++ {
-			// Usamos tu lógica de DrawPixel para que se vea
-			// bien tanto en Mac como con el "píxel gordo" de Linux
-			d.DrawPixel(int32(rect.Point.X+x), int32(rect.Point.Y+y), color)
-		}
-	}
-}
-
 func main() {
-	display := InitDisplay(sW, sH, vW, vH)
+	display := drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
 	defer display.Close()
 
 	miSprite, err := LoadPNG("./resources/sprites/HUD.png")
@@ -147,9 +133,9 @@ func main() {
 
 		display.FillRect(fondoRect, colorFondo)
 
-		DrawString(display, miSprite, "abcdefghijklmnopqrstuvwxyz", 0, 0)
-		//DrawString(display, miSprite, "0123456789  ", 0, 9)
-		//DrawString(display, miSprite, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 9)
+		DrawString(display, miSprite, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 10, 10)
+		DrawString(display, miSprite, "abcdefghijklmnopqrstuvwxyz", 10, 20)
+		DrawString(display, miSprite, "0123456789", 10, 30)
 
 		DrawSprite(display, miSprite, "panel", "bottom")
 
