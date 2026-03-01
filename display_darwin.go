@@ -3,6 +3,7 @@ package main
 import (
 	"unsafe"
 
+	"apodeiktikos.com/fbtest/model"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -22,10 +23,13 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 }
 
 func (d *Display) DrawPixel(x, y int32, c []byte) {
-	if x >= 0 && x < vW && y >= 0 && y < vH {
-		offset := (y*vW + x) * 4
-		copy(d.pixels[offset:offset+4], c)
+	if x < 0 || x >= vW || y < 0 || y >= vH {
+		return
 	}
+
+	offset := (y*vW + x) * 4
+	copy(d.pixels[offset:offset+4], c)
+
 }
 
 func (d *Display) Clear() {
@@ -64,4 +68,33 @@ func (d *Display) GetInput() (int32, int32, bool) {
 	return dx, dy, false
 }
 
-func (d *Display) Close() { d.window.Destroy(); sdl.Quit() }
+func (d *Display) Close() {
+	d.window.Destroy()
+	sdl.Quit()
+}
+
+func (d *Display) DrawSpriteRect(sprite *model.Sprite, src model.Rect, destX, destY int32) {
+	for sy := 0; sy < src.H; sy++ {
+		for sx := 0; sx < src.W; sx++ {
+			// Calculamos la posición real dentro del PNG original
+			origX := src.X + sx
+			origY := src.Y + sy
+
+			// Seguridad: no leer fuera de la imagen original
+			if origX < 0 || origX >= sprite.W || origY < 0 || origY >= sprite.H {
+				continue
+			}
+
+			srcOff := (origY*sprite.W + origX) * 4
+			color := sprite.Pixels[srcOff : srcOff+4]
+
+			// Transparencia
+			if color[3] < 128 {
+				continue
+			}
+
+			// Dibujar en la pantalla (usando tu lógica de píxel gordo)
+			d.DrawPixel(destX+int32(sx), destY+int32(sy), color)
+		}
+	}
+}

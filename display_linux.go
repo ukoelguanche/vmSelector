@@ -45,3 +45,20 @@ func (d *Display) GetInput() (int32, int32, bool) {
 }
 
 func (d *Display) Close() { d.file.Close() }
+
+func (d *Display) DrawSprite(sprite *Sprite, x, y int32) {
+	for sy := 0; sy < sprite.H; sy++ {
+		for sx := 0; sx < sprite.W; sx++ {
+			srcOff := (sy*sprite.W + sx) * 4
+			color := sprite.Pixels[srcOff : srcOff+4]
+
+			// Si el píxel es transparente (Alpha < 128), no lo dibujamos
+			if color[3] < 128 {
+				continue
+			}
+
+			// Dibujamos el píxel usando nuestra lógica de "píxel gordo"
+			d.DrawPixel(x+int32(sx), y+int32(sy), color)
+		}
+	}
+}
