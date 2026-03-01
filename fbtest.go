@@ -70,7 +70,7 @@ func DrawString(display *Display, sprite *model.Sprite, text string, x, y int32)
 		sChar := string(char)
 		rect, ok := letras[sChar]
 		if !ok {
-			cursorX += 8 // Espacio por defecto si no existe
+			cursorX += 8
 			continue
 		}
 
@@ -116,7 +116,7 @@ func main() {
 
 	err2 := LoadFontConfig("./resources/sprites/HUD.json")
 	if err2 != nil {
-		fmt.Println("Error cargando sprite:", err)
+		fmt.Println("Error cargando json:", err)
 		return
 	}
 

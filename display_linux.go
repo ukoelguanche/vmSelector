@@ -1,6 +1,10 @@
 package main
 
-import "os"
+import (
+	"os"
+
+	"apodeiktikos.com/fbtest/model"
+)
 
 type Display struct {
 	file   *os.File
@@ -16,7 +20,6 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 }
 
 func (d *Display) DrawPixel(vx, vy int32, c []byte) {
-	// Aquí va tu lógica de "Píxel Gordo" manual
 	scaleX, scaleY := sW/vW, sH/vH
 	for py := 0; py < scaleY; py++ {
 		for px := 0; px < scaleX; px++ {
@@ -46,7 +49,7 @@ func (d *Display) GetInput() (int32, int32, bool) {
 
 func (d *Display) Close() { d.file.Close() }
 
-func (d *Display) DrawSprite(sprite *Sprite, x, y int32) {
+func (d *Display) DrawSprite(sprite *model.Sprite, x, y int32) {
 	for sy := 0; sy < sprite.H; sy++ {
 		for sx := 0; sx < sprite.W; sx++ {
 			srcOff := (sy*sprite.W + sx) * 4
