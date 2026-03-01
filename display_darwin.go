@@ -74,11 +74,11 @@ func (d *Display) Close() {
 }
 
 func (d *Display) DrawSpriteRect(sprite *model.Sprite, src model.Rect, destX, destY int32) {
-	for sy := 0; sy < src.H; sy++ {
-		for sx := 0; sx < src.W; sx++ {
+	for sy := 0; sy < src.Size.H; sy++ {
+		for sx := 0; sx < src.Size.W; sx++ {
 			// Calculamos la posición real dentro del PNG original
-			origX := src.X + sx
-			origY := src.Y + sy
+			origX := src.Point.X + sx
+			origY := src.Point.Y + sy
 
 			// Seguridad: no leer fuera de la imagen original
 			if origX < 0 || origX >= sprite.W || origY < 0 || origY >= sprite.H {

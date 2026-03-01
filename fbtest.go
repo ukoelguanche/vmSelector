@@ -75,7 +75,7 @@ func DrawString(display *Display, sprite *model.Sprite, text string, x, y int32)
 		}
 
 		display.DrawSpriteRect(sprite, rect, cursorX, y)
-		cursorX += int32(rect.W) + 1
+		cursorX += int32(rect.Size.W) + 1
 	}
 }
 
@@ -95,11 +95,11 @@ func DrawSprite(display *Display, sprite *model.Sprite, sectionName string, name
 }
 
 func (d *Display) FillRect(rect model.Rect, color []byte) {
-	for y := 0; y < rect.H; y++ {
-		for x := 0; x < rect.W; x++ {
+	for y := 0; y < rect.Size.H; y++ {
+		for x := 0; x < rect.Size.W; x++ {
 			// Usamos tu lógica de DrawPixel para que se vea
 			// bien tanto en Mac como con el "píxel gordo" de Linux
-			d.DrawPixel(int32(rect.X+x), int32(rect.Y+y), color)
+			d.DrawPixel(int32(rect.Point.X+x), int32(rect.Point.Y+y), color)
 		}
 	}
 }
@@ -140,7 +140,10 @@ func main() {
 
 		//colorFondo := []byte{40, 40, 40, 255} // Gris
 		colorFondo := []byte{0, 0, 180, 255} // Azul
-		fondoRect := model.Rect{X: 0, Y: 0, W: 320, H: 200}
+		fondoRect := model.Rect{
+			Point: model.Point{X: 0, Y: 0},
+			Size:  model.Size{W: 320, H: 200},
+		}
 
 		display.FillRect(fondoRect, colorFondo)
 
