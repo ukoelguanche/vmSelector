@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "image/png"
 	"time"
 
@@ -16,7 +15,7 @@ const frameDelay = time.Second / targetFPS
 func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, y int32) {
 	cursorX := x
 
-	letters := model.HUDSprites.GetSection("boldLetters")
+	letters := sprite.GetSection("boldLetters")
 
 	for _, char := range text {
 		sChar := string(char)
@@ -26,36 +25,29 @@ func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, 
 			continue
 		}
 
-		display.DrawSpriteRect(sprite, rect, cursorX, y)
+		display.DrawSpriteRect2(sprite.Bitmap, rect, cursorX, y)
 		cursorX += int32(rect.Size.W) + 1
 	}
 }
 
-func DrawSprite(display *drivers.Display, sprite *model.Sprite, sectionName string, name string) {
-	section := model.HUDSprites.GetSection(sectionName)
+func DrawSprite(sprite *model.Sprite, display *drivers.Display, sectionName string, name string, X int32, Y int32) {
+	section := sprite.GetSection(sectionName)
 	rect := section.GetSprite(name)
-	display.DrawSpriteRect(sprite, rect, 100, 100)
+	display.DrawSpriteRect2(sprite.Bitmap, rect, X, Y)
+}
+
+var hudSprite *model.Sprite
+
+func Init() {
+	hudSprite = loaders.LoadSprite("./resources/sprites/HUD.json")
+	return
 }
 
 func main() {
+	Init()
+
 	display := drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
 	defer display.Close()
-
-	miSprite, err := loaders.LoadPNG("./resources/sprites/HUD.png")
-	if err != nil {
-		fmt.Println("Error cargando sprite:", err)
-		return
-	}
-
-	err2 := loaders.LoadJSON("./resources/sprites/HUD.json", &model.HUDSprites)
-	if err2 != nil {
-		fmt.Println("Error cargando json:", err)
-		return
-	}
-
-	if miSprite == nil {
-		fmt.Println("Error cargando sprite")
-	}
 
 	var x, y int32 = 50, 50
 
@@ -80,18 +72,16 @@ func main() {
 
 		display.FillRect(fondoRect, colorFondo)
 
-		DrawSprite(display, miSprite, "panel", "top")
+		DrawSprite(hudSprite, display, "panel", "top", 80, 20)
+		DrawSprite(hudSprite, display, "panel", "center", 80, 38)
+		DrawSprite(hudSprite, display, "panel", "center", 80, 56)
+		DrawSprite(hudSprite, display, "panel", "bottom", 80, 72)
 
-		DrawString(display, miSprite, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 10, 10)
-		DrawString(display, miSprite, "abcdefghijklmnopqrstuvwxyz", 10, 20)
-		DrawString(display, miSprite, "0123456789", 10, 30)
-		DrawString(display, miSprite, "apodeiktikos", 133, 105)
+		DrawString(display, hudSprite, "A P O D E I K T I K O S", 86, 26)
 
 		display.Present()
-		//time.Sleep(16 * time.Millisecond)
 
 		elapsed := time.Since(start)
-		// log.Println("Elapsed time:", elapsed)
 		if elapsed < frameDelay {
 			time.Sleep(frameDelay - elapsed) // Dormimos el resto hasta llegar a los 33.3ms
 		}

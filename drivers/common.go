@@ -17,7 +17,7 @@ func (d *Display) FillRect(rect model.Rect, color []byte) {
 	}
 }
 
-func (d *Display) DrawSpriteRect(sprite *model.Sprite, src model.Rect, destX, destY int32) {
+func (d *Display) DrawSpriteRect2(sprite *model.Bitmap, src model.Rect, destX, destY int32) {
 	for sy := 0; sy < src.Size.H; sy++ {
 		for sx := 0; sx < src.Size.W; sx++ {
 			// Calculamos la posición real dentro del PNG original

@@ -1,5 +1,5 @@
 {
-  "SourceImage": "HUD.png",
+  "SourceImage": "./resources/sprites/HUD.png",
   "Sections": {
     "letters": {
       "A": {"Point": {"X": 0,  "Y": 27}, "Size": {"W": 8, "H": 8}},

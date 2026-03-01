@@ -2,21 +2,22 @@ package loaders
 
 import (
 	"image"
+	"log"
 	"os"
 
 	"apodeiktikos.com/fbtest/model"
 )
 
-func LoadPNG(path string) (*model.Sprite, error) {
+func LoadBitmap(path string) *model.Bitmap {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 	defer f.Close()
 
 	img, _, err := image.Decode(f)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
 	bounds := img.Bounds()
@@ -34,5 +35,5 @@ func LoadPNG(path string) (*model.Sprite, error) {
 			pixels[offset+3] = byte(a >> 8)
 		}
 	}
-	return &model.Sprite{W: w, H: h, Pixels: pixels}, nil
+	return &model.Bitmap{W: w, H: h, Pixels: pixels}
 }

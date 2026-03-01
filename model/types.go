@@ -17,21 +17,26 @@ type Rect struct {
 	Size  Size
 }
 
-type Sprite struct {
-	W, H   int
-	Pixels []byte
-}
-
 type SpriteDataSection map[string]Rect
 type SpriteDefinition struct {
 	SourceImage string
 	Sections    map[string]SpriteDataSection
 }
 
-var HUDSprites SpriteDefinition
+// ToDo: Change W, H to Size type
+type Bitmap struct {
+	W, H   int
+	Pixels []byte
+}
 
-func (sd SpriteDefinition) GetSection(sectionName string) SpriteDataSection {
-	letras, ok := sd.Sections[sectionName]
+type Sprite struct {
+	SourceImage string
+	Sections    map[string]SpriteDataSection
+	Bitmap      *Bitmap
+}
+
+func (s Sprite) GetSection(sectionName string) SpriteDataSection {
+	letras, ok := s.Sections[sectionName]
 	if !ok {
 		log.Fatalf("Section %s not found", sectionName)
 	}
