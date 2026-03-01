@@ -20,13 +20,27 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 }
 
 func (d *Display) DrawPixel(vx, vy int32, c []byte) {
+	if vx < 0 || vx >= VW || vy < 0 || vy >= VH {
+		return
+	}
+
 	scaleX, scaleY := SW/VW, SH/VH
+
+	// Extraemos los componentes del color original (RGBA)
+	r, g, b, a := c[0], c[1], c[2], c[3]
+
 	for py := 0; py < scaleY; py++ {
 		for px := 0; px < scaleX; px++ {
 			rx, ry := int(vx)*scaleX+px, int(vy)*scaleY+py
-			if rx < SW && ry < SH {
+
+			if rx >= 0 && rx < SW && ry >= 0 && ry < SH {
 				offset := (ry*SW + rx) * 4
-				copy(d.pixels[offset:offset+4], c)
+
+				// AQUÍ ESTÁ EL CAMBIO: Escribimos en orden B, G, R, A
+				d.pixels[offset] = b   // Azul primero
+				d.pixels[offset+1] = g // Verde igual
+				d.pixels[offset+2] = r // Rojo al final
+				d.pixels[offset+3] = a // Alpha
 			}
 		}
 	}

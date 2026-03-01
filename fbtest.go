@@ -1,59 +1,19 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"image"
 	_ "image/png"
-	"os"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
+	"apodeiktikos.com/fbtest/loaders"
 	"apodeiktikos.com/fbtest/model"
 )
-
-func LoadPNG(path string) (*model.Sprite, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	img, _, err := image.Decode(f)
-	if err != nil {
-		return nil, err
-	}
-
-	bounds := img.Bounds()
-	w, h := bounds.Dx(), bounds.Dy()
-	pixels := make([]byte, w*h*4)
-
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-			r, g, b, a := img.At(bounds.Min.X+x, bounds.Min.Y+y).RGBA()
-			offset := (y*w + x) * 4
-			// Convertimos de 16-bit a 8-bit que devuelve Go
-			pixels[offset] = byte(r >> 8)
-			pixels[offset+1] = byte(g >> 8)
-			pixels[offset+2] = byte(b >> 8)
-			pixels[offset+3] = byte(a >> 8)
-		}
-	}
-	return &model.Sprite{W: w, H: h, Pixels: pixels}, nil
-}
 
 const targetFPS = 30
 const frameDelay = time.Second / targetFPS
 
 var fuenteMapa map[string]map[string]model.Rect
-
-func LoadFontConfig(path string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(data, &fuenteMapa)
-}
 
 func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, y int32) {
 	cursorX := x
@@ -94,13 +54,13 @@ func main() {
 	display := drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
 	defer display.Close()
 
-	miSprite, err := LoadPNG("./resources/sprites/HUD.png")
+	miSprite, err := loaders.LoadPNG("./resources/sprites/HUD.png")
 	if err != nil {
 		fmt.Println("Error cargando sprite:", err)
 		return
 	}
 
-	err2 := LoadFontConfig("./resources/sprites/HUD.json")
+	err2 := loaders.LoadJSON("./resources/sprites/HUD.json", &fuenteMapa)
 	if err2 != nil {
 		fmt.Println("Error cargando json:", err)
 		return
@@ -140,26 +100,10 @@ func main() {
 		DrawString(display, miSprite, "0123456789", 10, 30)
 		DrawString(display, miSprite, "apodeiktikos", 133, 105)
 
-		//DrawSprite(display, miSprite, "panel", "center")
-		//DrawSprite(display, miSprite, "panel", "bottom")
-
-		/*
-			str := "H"
-			chr := str[0]
-			idx := int(chr) - 65
-
-			// 3. Calculamos la posición (suponiendo que cada letra mide, por ejemplo, 16px)
-			const charWidth = 9
-			xSource := idx * charWidth
-
-			source := Rect{X: xSource, Y: 0, W: 8, H: 8}
-			display.DrawSpriteRect(miSprite, source, x, y)
-		*/
-
 		display.Present()
 		//time.Sleep(16 * time.Millisecond)
 
-		elapsed := time.Since(start) // ¿Cuánto tiempo hemos gastado trabajando?
+		elapsed := time.Since(start)
 		// log.Println("Elapsed time:", elapsed)
 		if elapsed < frameDelay {
 			time.Sleep(frameDelay - elapsed) // Dormimos el resto hasta llegar a los 33.3ms
