@@ -133,11 +133,15 @@ func main() {
 
 		display.FillRect(fondoRect, colorFondo)
 
+		DrawSprite(display, miSprite, "panel", "top")
+
 		DrawString(display, miSprite, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 10, 10)
 		DrawString(display, miSprite, "abcdefghijklmnopqrstuvwxyz", 10, 20)
 		DrawString(display, miSprite, "0123456789", 10, 30)
+		DrawString(display, miSprite, "apodeiktikos", 133, 105)
 
-		DrawSprite(display, miSprite, "panel", "bottom")
+		//DrawSprite(display, miSprite, "panel", "center")
+		//DrawSprite(display, miSprite, "panel", "bottom")
 
 		/*
 			str := "H"
