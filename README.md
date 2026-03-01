@@ -7,8 +7,8 @@ $ scp fbtest root@10.0.10.19:fbtest
 
 # Upload resources
 ```shell
-scp resources/sprites/hud.png root@10.0.10.19:resources/sprites/HUD.png
-scp resources/sprites/hud.json root@10.0.10.19:resources/sprites/HUD.json
+scp resources/sprites/HUDcaca.png root@10.0.10.19:resources/sprites/HUD.png
+scp resources/sprites/HUD.json root@10.0.10.19:resources/sprites/HUD.json
 
 ````
 
