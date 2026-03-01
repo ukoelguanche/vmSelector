@@ -7,7 +7,7 @@ import (
 	"apodeiktikos.com/fbtest/model"
 )
 
-func LoadJSON(path string, destination *map[string]map[string]model.Rect) error {
+func LoadJSON(path string, destination *model.SpriteDefinition) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err

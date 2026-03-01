@@ -13,18 +13,14 @@ import (
 const targetFPS = 30
 const frameDelay = time.Second / targetFPS
 
-var fuenteMapa map[string]map[string]model.Rect
-
 func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, y int32) {
 	cursorX := x
-	letras, ok := fuenteMapa["boldLetters"]
-	if !ok {
-		return // No existe la sección "letters" en el JSON
-	}
+
+	letters := model.HUDSprites.GetSection("boldLetters")
 
 	for _, char := range text {
 		sChar := string(char)
-		rect, ok := letras[sChar]
+		rect, ok := letters[sChar]
 		if !ok {
 			cursorX += 8
 			continue
@@ -36,17 +32,8 @@ func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, 
 }
 
 func DrawSprite(display *drivers.Display, sprite *model.Sprite, sectionName string, name string) {
-
-	section, ok := fuenteMapa[sectionName]
-	if !ok {
-		return // No existe la sección "letters" en el JSON
-	}
-
-	rect, ok := section[name]
-	if !ok {
-		return
-	}
-
+	section := model.HUDSprites.GetSection(sectionName)
+	rect := section.GetSprite(name)
 	display.DrawSpriteRect(sprite, rect, 100, 100)
 }
 
@@ -60,7 +47,7 @@ func main() {
 		return
 	}
 
-	err2 := loaders.LoadJSON("./resources/sprites/HUD.json", &fuenteMapa)
+	err2 := loaders.LoadJSON("./resources/sprites/HUD.json", &model.HUDSprites)
 	if err2 != nil {
 		fmt.Println("Error cargando json:", err)
 		return
