@@ -1,1 +1,3 @@
 fbtest
+*.tgz
+.DS_Store

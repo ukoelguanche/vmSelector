@@ -13,7 +13,7 @@ import (
 	"apodeiktikos.com/fbtest/util"
 )
 
-const targetFPS = 30
+const targetFPS = 60
 const frameDelay = time.Second / targetFPS
 
 var gpuString string
@@ -45,14 +45,14 @@ func DrawSprite(sprite *model.Sprite, sectionName string, name string, X int32, 
 }
 
 func DrawSpriteGradient(sprite *model.Sprite, sectionName string, name string, X int32, Y int32, sourceGradient model.Gradient, targetGradient model.Gradient, frameIndex int) {
-	normalizeFrameIndex := int(frameIndex / 3)
+	normalizeFrameIndex := int(frameIndex / 5)
 	section := sprite.GetSection(sectionName)
 	rect := section.GetSprite(name)
 	drivers.GlobalDisplay.DrawSpriteRectGradient(sprite.Bitmap, rect, X, Y, sourceGradient, targetGradient, normalizeFrameIndex)
 }
 
 func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X int32, Y int32) {
-	normalizeFrameIndex := int(frameIndex / 3)
+	normalizeFrameIndex := int(frameIndex / 5)
 	animation := sprite.GetAnimation(animationName)
 	rects := sprite.GetAnimationRects(animation.Section)
 
@@ -117,10 +117,9 @@ func EaseInOutCubic(t float64) float64 {
 	}
 	return 1 - math.Pow(-2*t+2, 3)/2
 }
-
 func RenderHUD(animationIndex int, selectedVMIndex int) {
-	const initialPos = 250
-	animationPercent := min(float64(animationIndex*2), initialPos) / initialPos
+	const initialPos = 220
+	animationPercent := min(float64(animationIndex), initialPos) / initialPos
 	ease := EaseInOutCubic(animationPercent)
 
 	xOffset := initialPos - int32(initialPos*ease)
