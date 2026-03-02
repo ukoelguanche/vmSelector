@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "image/png"
 	"log"
+	"math"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
@@ -12,7 +13,7 @@ import (
 	"apodeiktikos.com/fbtest/util"
 )
 
-const targetFPS = 10
+const targetFPS = 30
 const frameDelay = time.Second / targetFPS
 
 var gpuString string
@@ -43,19 +44,21 @@ func DrawSprite(sprite *model.Sprite, sectionName string, name string, X int32, 
 	drivers.GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
 }
 
-func DrawSpriteGradient(sprite *model.Sprite, sectionName string, name string, X int32, Y int32, sourceGradient model.Gradient, targetGradient model.Gradient, animationIndex int) {
+func DrawSpriteGradient(sprite *model.Sprite, sectionName string, name string, X int32, Y int32, sourceGradient model.Gradient, targetGradient model.Gradient, frameIndex int) {
+	normalizeFrameIndex := int(frameIndex / 3)
 	section := sprite.GetSection(sectionName)
 	rect := section.GetSprite(name)
-	drivers.GlobalDisplay.DrawSpriteRectGradient(sprite.Bitmap, rect, X, Y, sourceGradient, targetGradient, animationIndex)
+	drivers.GlobalDisplay.DrawSpriteRectGradient(sprite.Bitmap, rect, X, Y, sourceGradient, targetGradient, normalizeFrameIndex)
 }
 
 func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X int32, Y int32) {
+	normalizeFrameIndex := int(frameIndex / 3)
 	animation := sprite.GetAnimation(animationName)
 	rects := sprite.GetAnimationRects(animation.Section)
 
 	frames := animation.Frames
 
-	rect := rects[frames[frameIndex%len(frames)]]
+	rect := rects[frames[normalizeFrameIndex%len(frames)]]
 
 	drivers.GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
 }
@@ -65,7 +68,7 @@ var greenHill *model.Sprite
 var greenHillBack *model.Sprite
 var sonic *model.Sprite
 
-func GetVMsWithGPU(gpuString string, CentinelVM *model.VM) []model.VM {
+func GetVMsWithGPU(gpuString string, centinelVM *model.VM) []model.VM {
 	vms := model.GetVMs()
 	if vms == nil {
 		log.Fatal("Could not find any VMs")
@@ -74,10 +77,12 @@ func GetVMsWithGPU(gpuString string, CentinelVM *model.VM) []model.VM {
 	var filtered []model.VM
 
 	for _, vm := range vms.Data {
-		if vm.HasSpecificGPU(gpuString) && vm.Name != CentinelVM.Name {
+		if vm.HasSpecificGPU(gpuString) && vm.Name != centinelVM.Name {
 			filtered = append(filtered, vm)
 		}
 	}
+
+	filtered = append(filtered, *centinelVM)
 
 	return filtered
 }
@@ -104,6 +109,48 @@ func Init() {
 	greenHillBack = loaders.LoadSprite("./resources/sprites/GreenHillBack.json")
 	sonic = loaders.LoadSprite("./resources/sprites/Sonic.json")
 
+}
+
+func EaseInOutCubic(t float64) float64 {
+	if t < 0.5 {
+		return 4 * t * t * t
+	}
+	return 1 - math.Pow(-2*t+2, 3)/2
+}
+
+func RenderHUD(animationIndex int, selectedVMIndex int) {
+	const initialPos = 250
+	animationPercent := min(float64(animationIndex*2), initialPos) / initialPos
+	ease := EaseInOutCubic(animationPercent)
+
+	xOffset := initialPos - int32(initialPos*ease)
+
+	for i := 0; i < 13; i++ {
+		DrawSprite(hub, "items", "zigZagBG", 90+xOffset, int32(i*16))
+	}
+
+	var HUDX int32 = 130 + xOffset
+	var HUDY int32 = 40
+
+	var selectedOffset int32 = 0
+	for i, vm := range vms {
+		entryY := HUDY + int32(i*20)
+		text := vm.Name
+
+		if i == len(vms)-1 {
+			entryY = entryY + 20
+			text = "Power Down"
+		}
+
+		if i == selectedVMIndex {
+			selectedOffset = 4
+			DrawAnimation(hub, "ring", animationIndex, HUDX-15, entryY+1)
+		} else {
+			selectedOffset = 0
+		}
+
+		DrawString(hub, text, HUDX+selectedOffset, entryY+1, "genesisLetters")
+	}
 }
 
 func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
@@ -146,32 +193,7 @@ func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 	DrawAnimation(greenHill, "flower2", animationIndex+7, 220, 115)
 	DrawAnimation(greenHill, "flower2", animationIndex, 250, 115)
 
-	DrawSprite(hub, "items", "zigZagBG", 90, 0)
-	DrawSprite(hub, "items", "zigZagBG", 90, 16)
-	DrawSprite(hub, "items", "zigZagBG", 90, 32)
-	DrawSprite(hub, "items", "zigZagBG", 90, 48)
-	DrawSprite(hub, "items", "zigZagBG", 90, 64)
-	DrawSprite(hub, "items", "zigZagBG", 90, 80)
-	DrawSprite(hub, "items", "zigZagBG", 90, 96)
-	DrawSprite(hub, "items", "zigZagBG", 90, 112)
-	DrawSprite(hub, "items", "zigZagBG", 90, 128)
-	DrawSprite(hub, "items", "zigZagBG", 90, 144)
-	DrawSprite(hub, "items", "zigZagBG", 90, 160)
-	DrawSprite(hub, "items", "zigZagBG", 90, 176)
-	DrawSprite(hub, "items", "zigZagBG", 90, 192)
-
-	const HUDX int32 = 130
-	const HUDY int32 = 40
-
-	for i, vm := range vms {
-		var selectedOffset int32 = 0
-		entryY := HUDY + int32(i*20)
-		if i == selectedVMIndex {
-			selectedOffset = 0
-			DrawAnimation(hub, "ring", animationIndex, HUDX-20, entryY+1)
-		}
-		DrawString(hub, vm.Name, HUDX+selectedOffset, entryY+1, "genesisLetters")
-	}
+	RenderHUD(animationIndex, selectedVMIndex)
 
 	DrawAnimation(sonic, "sonic", animationIndex, 35, 128)
 
@@ -196,7 +218,7 @@ func main() {
 			SwitchToVM(centinelVM, vms[selectedVMIndex])
 		}
 
-		if (dx > 0 || dy > 0) && selectedVMIndex < len(vms)-1 {
+		if (dx > 0 || dy > 0) && selectedVMIndex < len(vms) {
 			selectedVMIndex += 1
 		}
 		if (dx < 0 || dy < 0) && selectedVMIndex > 0 {
@@ -207,7 +229,7 @@ func main() {
 
 		Loop(animationIndex, selectedVMIndex, endLoop)
 
-		animationIndex++
+		animationIndex += 1
 
 		elapsed := time.Since(start)
 

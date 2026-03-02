@@ -4,7 +4,7 @@ import "apodeiktikos.com/fbtest/model"
 
 const (
 	VW, VH = 320, 200
-	SW, SH = 640, 480
+	SW, SH = 1280, 720
 )
 
 var GlobalDisplay *Display
