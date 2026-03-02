@@ -18,7 +18,12 @@ type Rect struct {
 }
 
 type SpriteDataSection map[string]Rect
-type SpriteAnimation []Rect
+
+type SpriteAnimation struct {
+	Section string
+	Frames  []int
+}
+
 type SpriteDefinition struct {
 	SourceImage string
 	Sections    map[string]SpriteDataSection
@@ -31,10 +36,11 @@ type Bitmap struct {
 }
 
 type Sprite struct {
-	SourceImage string
-	Sections    map[string]SpriteDataSection
-	Animations  map[string]SpriteAnimation
-	Bitmap      *Bitmap
+	Bitmap            *Bitmap
+	SourceImage       string
+	Sections          map[string]SpriteDataSection
+	AnimationSections map[string][]Rect
+	Animations        map[string]SpriteAnimation
 }
 
 func (s Sprite) GetSection(sectionName string) SpriteDataSection {
@@ -49,10 +55,19 @@ func (s Sprite) GetSection(sectionName string) SpriteDataSection {
 func (s Sprite) GetAnimation(animationName string) SpriteAnimation {
 	animationFrame, ok := s.Animations[animationName]
 	if !ok {
-		log.Fatalf("Section %s not found", animationName)
+		log.Fatalf("Animation %s not found", animationName)
 	}
 
 	return animationFrame
+}
+
+func (s Sprite) GetAnimationRects(animationSectionName string) []Rect {
+	animationRects, ok := s.AnimationSections[animationSectionName]
+	if !ok {
+		log.Fatalf("Animation rect %s not found", animationSectionName)
+	}
+
+	return animationRects
 }
 
 func (section SpriteDataSection) GetSprite(name string) Rect {
