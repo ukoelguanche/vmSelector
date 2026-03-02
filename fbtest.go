@@ -9,7 +9,7 @@ import (
 	"apodeiktikos.com/fbtest/model"
 )
 
-const targetFPS = 30
+const targetFPS = 10
 const frameDelay = time.Second / targetFPS
 
 func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, y int32) {
@@ -25,7 +25,7 @@ func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, 
 			continue
 		}
 
-		display.DrawSpriteRect2(sprite.Bitmap, rect, cursorX, y)
+		display.DrawSpriteRect(sprite.Bitmap, rect, cursorX, y)
 		cursorX += int32(rect.Size.W) + 1
 	}
 }
@@ -33,24 +33,34 @@ func DrawString(display *drivers.Display, sprite *model.Sprite, text string, x, 
 func DrawSprite(sprite *model.Sprite, display *drivers.Display, sectionName string, name string, X int32, Y int32) {
 	section := sprite.GetSection(sectionName)
 	rect := section.GetSprite(name)
-	display.DrawSpriteRect2(sprite.Bitmap, rect, X, Y)
+	display.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
+}
+
+func DrawAnimation(sprite *model.Sprite, display *drivers.Display, animationName string, frameIndex int, X int32, Y int32) {
+	animationFrames := sprite.GetAnimation(animationName)
+	rect := animationFrames[frameIndex%len(animationFrames)]
+	display.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
 }
 
 var hudSprite *model.Sprite
+var rossi *model.Sprite
 
 func Init() {
 	hudSprite = loaders.LoadSprite("./resources/sprites/HUD.json")
+	rossi = loaders.LoadSprite("./resources/sprites/rossi.json")
 	return
 }
 
 func main() {
 	Init()
 
+	// ToDo: Convert display to global variable
 	display := drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
 	defer display.Close()
 
 	var x, y int32 = 50, 50
 
+	var animationIndex = 0
 	for {
 		start := time.Now()
 
@@ -77,6 +87,9 @@ func main() {
 		DrawSprite(hudSprite, display, "panel", "center", 80, 56)
 		DrawSprite(hudSprite, display, "panel", "bottom", 80, 72)
 
+		DrawAnimation(rossi, display, "legs", animationIndex, 78, 152)
+		DrawAnimation(rossi, display, "chest", animationIndex, 80, 132)
+
 		DrawString(display, hudSprite, "A P O D E I K T I K O S", 86, 26)
 
 		display.Present()
@@ -85,5 +98,6 @@ func main() {
 		if elapsed < frameDelay {
 			time.Sleep(frameDelay - elapsed) // Dormimos el resto hasta llegar a los 33.3ms
 		}
+		animationIndex = animationIndex + 1
 	}
 }

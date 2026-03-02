@@ -10,14 +10,12 @@ const (
 func (d *Display) FillRect(rect model.Rect, color []byte) {
 	for y := 0; y < rect.Size.H; y++ {
 		for x := 0; x < rect.Size.W; x++ {
-			// Usamos tu lógica de DrawPixel para que se vea
-			// bien tanto en Mac como con el "píxel gordo" de Linux
 			d.DrawPixel(int32(rect.Point.X+x), int32(rect.Point.Y+y), color)
 		}
 	}
 }
 
-func (d *Display) DrawSpriteRect2(sprite *model.Bitmap, src model.Rect, destX, destY int32) {
+func (d *Display) DrawSpriteRect(sprite *model.Bitmap, src model.Rect, destX, destY int32) {
 	for sy := 0; sy < src.Size.H; sy++ {
 		for sx := 0; sx < src.Size.W; sx++ {
 			// Calculamos la posición real dentro del PNG original
@@ -37,7 +35,7 @@ func (d *Display) DrawSpriteRect2(sprite *model.Bitmap, src model.Rect, destX, d
 				continue
 			}
 
-			// Dibujar en la pantalla (usando tu lógica de píxel gordo)
+			// Dibujar en la pantalla
 			d.DrawPixel(destX+int32(sx), destY+int32(sy), color)
 		}
 	}

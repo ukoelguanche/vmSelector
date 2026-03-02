@@ -15,7 +15,7 @@ type Display struct {
 
 func InitDisplay(sw, sh, vw, vh int) *Display {
 	sdl.Init(sdl.INIT_EVERYTHING)
-	w, _ := sdl.CreateWindow("framebuffer", 100, 100, int32(sw), int32(sh), sdl.WINDOW_SHOWN)
+	w, _ := sdl.CreateWindow("framebuffer", 100, 100, int32(sw), int32(sh), sdl.WINDOW_FULLSCREEN_DESKTOP)
 	r, _ := sdl.CreateRenderer(w, -1, sdl.RENDERER_ACCELERATED)
 	t, _ := r.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STREAMING, int32(vw), int32(vh))
 	return &Display{w, r, t, make([]byte, vw*vh*4)}
