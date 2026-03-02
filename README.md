@@ -7,13 +7,10 @@ GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o fbtest .
 # Upload resources
 ```shell
 scp fbtest root@10.0.10.19:fbtest
-scp resources/sprites/HUD.png root@10.0.10.19:resources/sprites/HUD.png
-scp resources/sprites/HUD.json root@10.0.10.19:resources/sprites/HUD.json
-scp resources/sprites/HUD.json root@10.0.10.19:resources/sprites/rossi.png
-scp resources/sprites/HUD.json root@10.0.10.19:resources/sprites/rossi.json
+tar czf resources.tgz resources
+scp resources.tgz root@10.0.10.19:resources.tgz
+ssh  root@10.0.10.19 tar -xzf resources.tgz 
 ````
-
-
 
 
 # Alpine setup

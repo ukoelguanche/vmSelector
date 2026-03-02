@@ -28,7 +28,6 @@ func (d *Display) DrawPixel(x, y int32, c []byte) {
 
 	offset := (y*VW + x) * 4
 	copy(d.pixels[offset:offset+4], c)
-
 }
 
 func (d *Display) Clear() {

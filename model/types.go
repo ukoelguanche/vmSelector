@@ -43,6 +43,29 @@ type Sprite struct {
 	Animations        map[string]SpriteAnimation
 }
 
+type Color struct {
+	R uint8
+	G uint8
+	B uint8
+	A uint8
+}
+
+func (c Color) Byte() []byte {
+	return []byte{c.R, c.G, c.B, c.A}
+}
+
+type Gradient []Color
+
+func (g Gradient) GradientIndex(color []byte) int {
+	for i, c := range g {
+		if color[0] == c.R && color[1] == c.G && color[2] == c.B {
+			return i
+		}
+	}
+
+	return -1
+}
+
 func (s Sprite) GetSection(sectionName string) SpriteDataSection {
 	rects, ok := s.Sections[sectionName]
 	if !ok {

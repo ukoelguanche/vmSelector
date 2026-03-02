@@ -42,3 +42,36 @@ func (d *Display) DrawSpriteRect(sprite *model.Bitmap, src model.Rect, destX, de
 		}
 	}
 }
+
+func (d *Display) DrawSpriteRectGradient(sprite *model.Bitmap, src model.Rect, destX, destY int32, sourceGradient model.Gradient, targetGradient model.Gradient, animationIndex int) {
+	for sy := 0; sy < src.Size.H; sy++ {
+		for sx := 0; sx < src.Size.W; sx++ {
+			origX := src.Point.X + sx
+			origY := src.Point.Y + sy
+
+			if origX < 0 || origX >= sprite.W || origY < 0 || origY >= sprite.H {
+				continue
+			}
+
+			srcOff := (origY*sprite.W + sx + src.Point.X) * 4 // Asegúrate de sumar el offset X correctamente
+			color := sprite.Pixels[srcOff : srcOff+4]
+
+			if color[3] < 128 {
+				continue
+			}
+
+			colorADibujar := ReplaceGradientColor(color, sourceGradient, targetGradient, animationIndex) // Por defecto el original
+
+			d.DrawPixel(destX+int32(sx), destY+int32(sy), colorADibujar)
+		}
+	}
+}
+
+func ReplaceGradientColor(color []byte, sourceGradient model.Gradient, targetGradient model.Gradient, animationIndex int) []byte {
+	gradientIndex := sourceGradient.GradientIndex(color)
+
+	if gradientIndex >= 0 {
+		return targetGradient[(gradientIndex+animationIndex)%len(targetGradient)].Byte()
+	}
+	return color
+}

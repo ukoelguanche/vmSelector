@@ -42,6 +42,12 @@ func DrawSprite(sprite *model.Sprite, sectionName string, name string, X int32, 
 	drivers.GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
 }
 
+func DrawSpriteGradient(sprite *model.Sprite, sectionName string, name string, X int32, Y int32, sourceGradient model.Gradient, targetGradient model.Gradient, animationIndex int) {
+	section := sprite.GetSection(sectionName)
+	rect := section.GetSprite(name)
+	drivers.GlobalDisplay.DrawSpriteRectGradient(sprite.Bitmap, rect, X, Y, sourceGradient, targetGradient, animationIndex)
+}
+
 func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X int32, Y int32) {
 	animation := sprite.GetAnimation(animationName)
 	rects := sprite.GetAnimationRects(animation.Section)
@@ -55,6 +61,7 @@ func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X
 
 var hub *model.Sprite
 var greenHill *model.Sprite
+var greenHillBack *model.Sprite
 var sonic *model.Sprite
 
 func GetVMsWithGPU(gpuString string, CentinelVM *model.VM) []model.VM {
@@ -84,6 +91,7 @@ func Init() {
 
 	hub = loaders.LoadSprite("./resources/sprites/HUD.json")
 	greenHill = loaders.LoadSprite("./resources/sprites/GreenHill.json")
+	greenHillBack = loaders.LoadSprite("./resources/sprites/GreenHillBack.json")
 	sonic = loaders.LoadSprite("./resources/sprites/Sonic.json")
 
 }
@@ -99,6 +107,28 @@ func Loop(animationIndex int, selectedVMIndex int) {
 	}
 
 	drivers.GlobalDisplay.FillRect(fondoRect, colorFondo)
+
+	sourceGradient := []model.Color{
+		{R: 221, G: 119, B: 221, A: 255},
+		{R: 187, G: 85, B: 187, A: 255},
+		{R: 153, G: 51, B: 153, A: 255},
+		{R: 119, G: 17, B: 119, A: 255},
+	}
+
+	targetGradient := []model.Color{
+		{R: 151, G: 179, B: 246, A: 255},
+		{R: 115, G: 143, B: 245, A: 255},
+		{R: 115, G: 143, B: 177, A: 255},
+		{R: 187, G: 215, B: 249, A: 255},
+	}
+
+	DrawSprite(greenHillBack, "GreenHillBack", "layer6", 0-int32(float64(animationIndex)*0.2), 0)
+	DrawSprite(greenHillBack, "GreenHillBack", "layer5", 0-int32(float64(animationIndex)*0.1), 32)
+	DrawSprite(greenHillBack, "GreenHillBack", "layer4", 0-int32(float64(animationIndex)*0.05), 48)
+	DrawSprite(greenHillBack, "GreenHillBack", "layer3", 0, 64)
+	DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer2", 0, 112, sourceGradient, targetGradient, animationIndex)
+	DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer1", 0, 152, sourceGradient, targetGradient, animationIndex)
+
 	DrawSprite(greenHill, "GreenHill", "background", 0, 0)
 
 	DrawAnimation(greenHill, "flower1", animationIndex, 154, 90)
@@ -134,7 +164,7 @@ func main() {
 	for {
 		dx, dy, quit := drivers.GlobalDisplay.GetInput()
 		if quit {
-			continue
+			break
 		}
 
 		if dx > 0 || dy > 0 {
@@ -150,7 +180,7 @@ func main() {
 		animationIndex++
 
 		elapsed := time.Since(start)
-		// log.Printf("elapsed %s", elapsed)
+		//log.Printf("elapsed %s", elapsed)
 		if elapsed < frameDelay {
 			time.Sleep(frameDelay - elapsed)
 		}

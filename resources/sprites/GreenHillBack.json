@@ -1,0 +1,15 @@
+{
+  "SourceImage": "./resources/sprites/GreenHillBack.png",
+  "Sections": {
+    "GreenHillBack": {
+      "layer1": {"Point": {"X": 0, "Y": 192}, "Size": {"W": 3840, "H": 104}},
+      "layer2": {"Point": {"X": 0, "Y": 144}, "Size": {"W": 3840, "H": 40}},
+      "layer3": {"Point": {"X": 0, "Y": 88}, "Size": {"W": 3840, "H": 48}},
+      "layer4": {"Point": {"X": 0, "Y": 64}, "Size": {"W": 3840, "H": 16}},
+      "layer5": {"Point": {"X": 0, "Y": 40}, "Size": {"W": 3840, "H": 16}},
+      "layer6": {"Point": {"X": 0, "Y": 0}, "Size": {"W": 3840, "H": 32}},
+      "water": {"Point": {"X": 90, "Y": 163}, "Size": {"W": 16, "H": 16}}
+    }
+  }
+}
+
