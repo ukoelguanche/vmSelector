@@ -7,6 +7,8 @@ const (
 	SW, SH = 640, 480
 )
 
+var GlobalDisplay *Display
+
 func (d *Display) FillRect(rect model.Rect, color []byte) {
 	for y := 0; y < rect.Size.H; y++ {
 		for x := 0; x < rect.Size.W; x++ {
