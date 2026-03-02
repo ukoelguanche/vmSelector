@@ -1,5 +1,5 @@
 {
-  "SourceImage": "./resources/sprites/sonic.png",
+  "SourceImage": "./resources/sprites/Sonic.png",
   "AnimationSections": {
     "sonic": [
       {"Point": {"X": 0,  "Y": 0}, "Size": {"W": 30, "H": 40}},

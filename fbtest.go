@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "image/png"
 	"log"
 	"time"
@@ -81,6 +82,15 @@ func GetVMsWithGPU(gpuString string, CentinelVM *model.VM) []model.VM {
 	return filtered
 }
 
+func SwitchToVM(centinelVM *model.VM, targetVM model.VM) {
+	if centinelVM.VMID == targetVM.VMID {
+		model.SetVMDescription(centinelVM, "power_off")
+	} else {
+		model.SetVMDescription(centinelVM, fmt.Sprintf("target_vm_id %d", targetVM.VMID))
+	}
+	model.PowerOffVM(centinelVM)
+}
+
 func Init() {
 	util.LoadContext()
 	drivers.GlobalDisplay = drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
@@ -96,7 +106,7 @@ func Init() {
 
 }
 
-func Loop(animationIndex int, selectedVMIndex int) {
+func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 
 	drivers.GlobalDisplay.Clear()
 
@@ -136,6 +146,20 @@ func Loop(animationIndex int, selectedVMIndex int) {
 	DrawAnimation(greenHill, "flower2", animationIndex+7, 220, 115)
 	DrawAnimation(greenHill, "flower2", animationIndex, 250, 115)
 
+	DrawSprite(hub, "items", "zigZagBG", 90, 0)
+	DrawSprite(hub, "items", "zigZagBG", 90, 16)
+	DrawSprite(hub, "items", "zigZagBG", 90, 32)
+	DrawSprite(hub, "items", "zigZagBG", 90, 48)
+	DrawSprite(hub, "items", "zigZagBG", 90, 64)
+	DrawSprite(hub, "items", "zigZagBG", 90, 80)
+	DrawSprite(hub, "items", "zigZagBG", 90, 96)
+	DrawSprite(hub, "items", "zigZagBG", 90, 112)
+	DrawSprite(hub, "items", "zigZagBG", 90, 128)
+	DrawSprite(hub, "items", "zigZagBG", 90, 144)
+	DrawSprite(hub, "items", "zigZagBG", 90, 160)
+	DrawSprite(hub, "items", "zigZagBG", 90, 176)
+	DrawSprite(hub, "items", "zigZagBG", 90, 192)
+
 	const HUDX int32 = 130
 	const HUDY int32 = 40
 
@@ -143,8 +167,8 @@ func Loop(animationIndex int, selectedVMIndex int) {
 		var selectedOffset int32 = 0
 		entryY := HUDY + int32(i*20)
 		if i == selectedVMIndex {
-			selectedOffset = 16
-			DrawSprite(hub, "items", "emerald", HUDX, entryY+3)
+			selectedOffset = 0
+			DrawAnimation(hub, "ring", animationIndex, HUDX-20, entryY+1)
 		}
 		DrawString(hub, vm.Name, HUDX+selectedOffset, entryY+1, "genesisLetters")
 	}
@@ -160,27 +184,33 @@ func main() {
 	defer drivers.GlobalDisplay.Close()
 	var animationIndex = 0
 	var selectedVMIndex = 0
+	var endLoop = false
 
 	for {
-		dx, dy, quit := drivers.GlobalDisplay.GetInput()
+		dx, dy, quit, enter := drivers.GlobalDisplay.GetInput()
 		if quit {
 			break
 		}
+		if enter {
+			endLoop = true
+			SwitchToVM(centinelVM, vms[selectedVMIndex])
+		}
 
-		if dx > 0 || dy > 0 {
+		if (dx > 0 || dy > 0) && selectedVMIndex < len(vms)-1 {
 			selectedVMIndex += 1
 		}
-		if dx < 0 || dy < 0 {
+		if (dx < 0 || dy < 0) && selectedVMIndex > 0 {
 			selectedVMIndex -= 1
 		}
 
 		start := time.Now()
-		Loop(animationIndex, selectedVMIndex)
+
+		Loop(animationIndex, selectedVMIndex, endLoop)
 
 		animationIndex++
 
 		elapsed := time.Since(start)
-		//log.Printf("elapsed %s", elapsed)
+
 		if elapsed < frameDelay {
 			time.Sleep(frameDelay - elapsed)
 		}

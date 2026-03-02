@@ -42,7 +42,7 @@ func (d *Display) Present() {
 	d.renderer.Present()
 }
 
-func (d *Display) GetInput() (int32, int32, bool) {
+func (d *Display) GetInput() (int32, int32, bool, bool) {
 	var dx, dy int32
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		if t, ok := event.(*sdl.KeyboardEvent); ok && t.Type == sdl.KEYDOWN {
@@ -56,14 +56,16 @@ func (d *Display) GetInput() (int32, int32, bool) {
 			case sdl.K_RIGHT:
 				dx = 4
 			case sdl.K_ESCAPE:
-				return 0, 0, true
+				return 0, 0, true, false
+			case sdl.K_RETURN:
+				return 0, 0, false, true
 			}
 		}
 		if _, ok := event.(*sdl.QuitEvent); ok {
-			return 0, 0, true
+			return 0, 0, true, false
 		}
 	}
-	return dx, dy, false
+	return dx, dy, false, false
 }
 
 func (d *Display) Close() {
