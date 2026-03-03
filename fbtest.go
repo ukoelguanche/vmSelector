@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "image/png"
+	"math"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
@@ -68,10 +69,13 @@ func Init() {
 			text = vm.Name
 		}
 
-		texts = append(texts, &model.Text{Sprite: sprites.Sprites["BoldLetters"], Text: text, Position: model.Point{X: hudOffset + 36, Y: int32(i)*16 + 60}})
+		textInstance := model.BuildTextInstance(sprites.Sprites["BoldLetters"], text, model.Point{X: hudOffset + 36, Y: int32(i)*16 + 60})
+		texts = append(texts, textInstance)
 	}
+
 	texts[0].Position.X += 12
-	texts = append(texts, &model.Text{Sprite: sprites.Sprites["GenesisLetters"], Text: centinelVM.Name, Position: model.Point{X: hudOffset + 30, Y: 30}})
+	texts[0].TargetPosition.X += 12
+	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 30, Y: 30}))
 
 	return
 
@@ -87,6 +91,7 @@ func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 
 	for _, text := range texts {
 		drivers.DrawText(text)
+		text.NextFrame()
 	}
 
 	drivers.GlobalDisplay.Present()
@@ -94,10 +99,15 @@ func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 }
 
 func incrementVMIndex(value int) {
-	texts[selectedVMIndex].Position.X -= 12
+	if math.Abs(float64(ring.TargetPosition.Y-ring.Position.Y)) > 1 {
+		return
+	}
+	texts[selectedVMIndex].TargetPosition.X -= 14
 	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
-	texts[selectedVMIndex].Position.X += 12
-	ring.Position.Y = texts[selectedVMIndex].Position.Y - 4
+	texts[selectedVMIndex].TargetPosition.X += 14
+
+	ring.TargetPosition.Y = texts[selectedVMIndex].Position.Y - 4
+	ring.Speed = 1
 }
 
 func main() {

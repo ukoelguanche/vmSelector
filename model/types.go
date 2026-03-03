@@ -49,11 +49,13 @@ type Renderable interface {
 	GetBitmap() *Bitmap
 	GetSprite() *Sprite
 	ProcessColor(color []byte) []byte
+	NextFrame()
 }
 
 type SpriteInstance struct {
 	Sprite                  *Sprite
 	Position                Point
+	TargetPosition          Point
 	FrameIdx                int
 	CurrentSequence         []int
 	SequenceOffset          float32
@@ -65,6 +67,7 @@ type SpriteInstance struct {
 	CurrentPalleteSwapPosition float32
 
 	PaletteSwapIndex int
+	Speed            int32
 }
 
 func (si *SpriteInstance) GetSprite() *Sprite {
@@ -99,9 +102,10 @@ func (si *SpriteInstance) ProcessColor(color []byte) []byte {
 }
 
 type Text struct {
-	Sprite   *Sprite
-	Position Point
-	Text     string
+	Sprite         *Sprite
+	Position       Point
+	TargetPosition Point
+	Text           string
 }
 
 func (t *Text) GetSprite() *Sprite {
@@ -110,6 +114,10 @@ func (t *Text) GetSprite() *Sprite {
 
 func (t *Text) GetBitmap() *Bitmap {
 	return t.Sprite.Bitmap
+}
+
+func (t *Text) NextFrame() {
+	UpdatePositionT(t)
 }
 
 func (t *Text) ProcessColor(color []byte) []byte {
@@ -123,6 +131,7 @@ func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, posi
 	spriteInstance := &SpriteInstance{
 		Sprite:                     sprites.Sprites[name],
 		Position:                   position,
+		TargetPosition:             position,
 		FrameIdx:                   0,
 		CurrentSequence:            sequence,
 		SequenceOffset:             1 / float32(len(sequence)) * relativeSeqenceSpeed,
@@ -136,12 +145,20 @@ func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, posi
 
 }
 
+func BuildTextInstance(sprite *Sprite, text string, position Point) *Text {
+	return &Text{Sprite: sprite, Text: text, Position: position, TargetPosition: position}
+}
+
 func (s *SpriteInstance) NextFrame() {
+	UpdatePosition(s)
+
+	// Update Frame
 	s.CurrentSequencePosition += s.SequenceOffset
 	if s.CurrentSequencePosition >= 1 {
 		s.CurrentSequencePosition = 0
 	}
 
+	// Swap palettes
 	if s.Sprite.PaletteSwap.TargetPalette == nil {
 		return
 	}
@@ -150,9 +167,40 @@ func (s *SpriteInstance) NextFrame() {
 	if s.CurrentPalleteSwapPosition >= 1 {
 		s.CurrentPalleteSwapPosition = 0
 	}
+}
 
-	//s.PaletteSwapIndex = (s.PaletteSwapIndex + 1) % len(*s.Sprite.PaletteSwap.TargetPalette)
-	//s.FrameIdx = (s.FrameIdx + 1) % s.SequenceLength
+func UpdatePosition(s *SpriteInstance) {
+	dx := s.TargetPosition.X - s.Position.X
+	dy := s.TargetPosition.Y - s.Position.Y
+
+	if dx > 0 {
+		s.Position.X += s.Speed
+	} else if dx < 0 {
+		s.Position.X -= s.Speed
+	}
+	if dy > 0 {
+		s.Position.Y += s.Speed
+	} else if dy < 0 {
+		s.Position.Y -= s.Speed
+	}
+}
+
+func UpdatePositionT(s *Text) {
+	dx := s.TargetPosition.X - s.Position.X
+	dy := s.TargetPosition.Y - s.Position.Y
+
+	speed := int32(2)
+
+	if dx > 0 {
+		s.Position.X += speed
+	} else if dx < 0 {
+		s.Position.X -= speed
+	}
+	if dy > 0 {
+		s.Position.Y += speed
+	} else if dy < 0 {
+		s.Position.Y -= speed
+	}
 }
 
 func (s *SpriteInstance) CurrentFrame() Rect {
