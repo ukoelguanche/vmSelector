@@ -1,15 +1,11 @@
 package model
 
-import (
-	"log"
-)
-
 type Point struct {
-	X, Y int
+	X, Y int32
 }
 
 type Size struct {
-	W, H int
+	W, H int32
 }
 
 type Rect struct {
@@ -17,32 +13,58 @@ type Rect struct {
 	Size  Size
 }
 
-type SpriteDataSection map[string]Rect
-
-type SpriteAnimation struct {
-	Section string
-	Frames  []int
+type Sprite struct {
+	Name         string
+	BitmapSource string `json:"BitmapSource"`
+	Bitmap       *Bitmap
+	Frames       []Rect           `json:"Frames"`
+	Sequences    map[string][]int `json:"Sequences"`
 }
 
-type SpriteDefinition struct {
-	SourceImage string
-	Sections    map[string]SpriteDataSection
+type Sprites struct {
+	BitmapSources map[string]string  `json:"BitmapSources"`
+	Sprites       map[string]*Sprite `json:"sprites"`
+}
+
+type SpriteInstance struct {
+	Sprite          *Sprite
+	Position        Point
+	FrameIdx        int
+	CurrentSequence []int
+	SequenceLength  int
+	Scale           float64
+}
+
+func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, position Point) *SpriteInstance {
+	sequence := sprites.Sprites[name].Sequences[sequenceName]
+	spriteInstance := &SpriteInstance{
+		Sprite:          sprites.Sprites[name],
+		Position:        position,
+		FrameIdx:        0,
+		CurrentSequence: sequence,
+		SequenceLength:  len(sequence),
+	}
+
+	return spriteInstance
+
+}
+
+func (s *SpriteInstance) NextFrame() {
+	s.FrameIdx = (s.FrameIdx + 1) % s.SequenceLength
+}
+
+func (s *SpriteInstance) CurrentFrame() Rect {
+	return s.Sprite.Frames[s.CurrentSequence[s.FrameIdx]]
 }
 
 // ToDo: Change W, H to Size type
 type Bitmap struct {
+	Name   string
 	Size   Size
 	Pixels []byte
 }
 
-type Sprite struct {
-	SourceImage string
-	Bitmap      *Bitmap
-
-	Sections          map[string]SpriteDataSection
-	AnimationSections map[string][]Rect
-	Animations        map[string]SpriteAnimation
-}
+type Bitmaps map[string]*Bitmap
 
 type Color struct {
 	R uint8
@@ -56,6 +78,8 @@ func (c Color) Byte() []byte {
 }
 
 type Gradient []Color
+
+/*
 
 func (g Gradient) GradientIndex(color []byte) int {
 	for i, c := range g {
@@ -101,3 +125,4 @@ func (section SpriteDataSection) GetSprite(name string) Rect {
 	}
 	return rect
 }
+*/

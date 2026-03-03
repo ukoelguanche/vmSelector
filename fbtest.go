@@ -2,32 +2,29 @@ package main
 
 import (
 	"fmt"
+	//"fmt"
 	_ "image/png"
-	"log"
-	"math"
+	//"log"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
 	"apodeiktikos.com/fbtest/loaders"
 	"apodeiktikos.com/fbtest/model"
-	"apodeiktikos.com/fbtest/sprites"
+	//"apodeiktikos.com/fbtest/sprites"
 	"apodeiktikos.com/fbtest/util"
 )
 
-const targetFPS = 60
+const targetFPS = 30
 const frameDelay = time.Second / targetFPS
 
 var gpuString string
 var centinelVM *model.VM
 var vms []model.VM
 
-var hud *model.Sprite
-var greenHill *model.Sprite
-var greenHillBack *model.Sprite
-var sonic *model.Sprite
+var sprites model.Sprites
+var ring *model.SpriteInstance
 
-var ring sprites.Ring
-
+/*
 func GetVMsWithGPU(gpuString string, centinelVM *model.VM) []model.VM {
 	vms := model.GetVMs()
 	if vms == nil {
@@ -46,6 +43,7 @@ func GetVMsWithGPU(gpuString string, centinelVM *model.VM) []model.VM {
 
 	return filtered
 }
+*/
 
 func SwitchToVM(centinelVM *model.VM, targetVM model.VM) {
 	if centinelVM.VMID == targetVM.VMID {
@@ -67,24 +65,22 @@ func Init() {
 	vms = append(vms, model.VM{Name: "Grafeio"})
 	vms = append(vms, model.VM{Name: "Apodeiktikos"})
 
-	hud = loaders.LoadSprite("./resources/sprites/HUD.json")
-	greenHill = loaders.LoadSprite("./resources/sprites/GreenHill.json")
-	greenHillBack = loaders.LoadSprite("./resources/sprites/GreenHillBack.json")
-	sonic = loaders.LoadSprite("./resources/sprites/Sonic.json")
+	loaders.LoadSprites("./resources/sprites/Sprites.json", &sprites)
 
-	ring = sprites.Ring{
-		Sprite: model.Sprite{ /* ... */ },
-		Point:  model.Point{X: 100, Y: 100},
-	}
+	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: 50, Y: 50})
+	return
+	////&model.SpriteInstance.Init("Ring", 50, 50)
 
 }
 
+/*
 func EaseInOutCubic(t float64) float64 {
 	if t < 0.5 {
 		return 4 * t * t * t
 	}
 	return 1 - math.Pow(-2*t+2, 3)/2
 }
+
 func RenderHUD(animationIndex int, selectedVMIndex int) {
 	const initialPos = 220
 	animationPercent := min(float64(animationIndex), initialPos) / initialPos
@@ -119,51 +115,60 @@ func RenderHUD(animationIndex int, selectedVMIndex int) {
 		drivers.DrawString(hud, text, HUDX+selectedOffset, entryY+1, "genesisLetters")
 	}
 }
+*/
 
 func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
-
 	drivers.GlobalDisplay.Clear()
 
-	colorFondo := []byte{255, 255, 255, 255}
-	fondoRect := model.Rect{
-		Point: model.Point{X: 0, Y: 0},
-		Size:  model.Size{W: 320, H: 200},
-	}
+	/*
+		colorFondo := []byte{255, 255, 255, 255}
+		fondoRect := model.Rect{
+			Point: model.Point{X: 0, Y: 0},
+			Size:  model.Size{W: 320, H: 200},
+		}
 
-	drivers.GlobalDisplay.FillRect(fondoRect, colorFondo)
+		drivers.GlobalDisplay.FillRect(fondoRect, colorFondo)
+	*/
 
-	sourceGradient := []model.Color{
-		{R: 221, G: 119, B: 221, A: 255},
-		{R: 187, G: 85, B: 187, A: 255},
-		{R: 153, G: 51, B: 153, A: 255},
-		{R: 119, G: 17, B: 119, A: 255},
-	}
+	drivers.DrawAnimation(ring)
+	ring.NextFrame()
 
-	targetGradient := []model.Color{
-		{R: 151, G: 179, B: 246, A: 255},
-		{R: 115, G: 143, B: 245, A: 255},
-		{R: 115, G: 143, B: 177, A: 255},
-		{R: 187, G: 215, B: 249, A: 255},
-	}
+	/*
 
-	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer6", 0-int32(float64(animationIndex)*0.2), 0)
-	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer5", 0-int32(float64(animationIndex)*0.1), 32)
-	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer4", 0-int32(float64(animationIndex)*0.05), 48)
-	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer3", 0, 64)
-	drivers.DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer2", 0, 112, sourceGradient, targetGradient, animationIndex)
-	drivers.DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer1", 0, 152, sourceGradient, targetGradient, animationIndex)
+		sourceGradient := []model.Color{
+			{R: 221, G: 119, B: 221, A: 255},
+			{R: 187, G: 85, B: 187, A: 255},
+			{R: 153, G: 51, B: 153, A: 255},
+			{R: 119, G: 17, B: 119, A: 255},
+		}
 
-	drivers.DrawSprite(greenHill, "GreenHill", "background", 0, 0)
+		targetGradient := []model.Color{
+			{R: 151, G: 179, B: 246, A: 255},
+			{R: 115, G: 143, B: 245, A: 255},
+			{R: 115, G: 143, B: 177, A: 255},
+			{R: 187, G: 215, B: 249, A: 255},
+		}
 
-	drivers.DrawAnimation(greenHill, "flower1", animationIndex, 154, 90)
-	drivers.DrawAnimation(greenHill, "flower2", animationIndex+15, -5, 115)
-	drivers.DrawAnimation(greenHill, "flower2", animationIndex+7, 220, 115)
-	drivers.DrawAnimation(greenHill, "flower2", animationIndex, 250, 115)
+		drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer6", 0-int32(float64(animationIndex)*0.2), 0)
+		drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer5", 0-int32(float64(animationIndex)*0.1), 32)
+		drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer4", 0-int32(float64(animationIndex)*0.05), 48)
+		drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer3", 0, 64)
+		drivers.DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer2", 0, 112, sourceGradient, targetGradient, animationIndex)
+		drivers.DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer1", 0, 152, sourceGradient, targetGradient, animationIndex)
 
-	RenderHUD(animationIndex, selectedVMIndex)
+		drivers.DrawSprite(greenHill, "GreenHill", "background", 0, 0)
 
-	drivers.DrawAnimation(sonic, "sonic", animationIndex, 35, 128)
+		drivers.DrawAnimation(greenHill, "flower1", animationIndex, 154, 90)
+		drivers.DrawAnimation(greenHill, "flower2", animationIndex+15, -5, 115)
+		drivers.DrawAnimation(greenHill, "flower2", animationIndex+7, 220, 115)
+		drivers.DrawAnimation(greenHill, "flower2", animationIndex, 250, 115)
 
+		RenderHUD(animationIndex, selectedVMIndex)
+
+		drivers.DrawAnimation(sonic, "sonic", animationIndex, 35, 128)
+
+
+	*/
 	drivers.GlobalDisplay.Present()
 }
 

@@ -1,0 +1,26 @@
+{
+  "BitmapSources": {
+    "hud": "./resources/sprites/HUD.png"
+  },
+  "Sprites": {
+    "Ring": {
+      "BitmapSource": "hud",
+      "Frames": [
+        {"Point": {"X": 0,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+        {"Point": {"X": 24,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+        {"Point": {"X": 44,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+        {"Point": {"X": 64,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+
+        {"Point": {"X": 88,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+        {"Point": {"X": 112,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+        {"Point": {"X": 136,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+        {"Point": {"X": 160,  "Y": 182}, "Size": {"W": 16, "H": 16}},
+        {"Point": {"X": 160,  "Y": 200}, "Size": {"W": 16, "H": 16}}
+      ],
+      "Sequences": {
+        "idle":  [0, 1, 2, 3],
+        "fade":  [4, 5, 6, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+      }
+    }
+  }
+}

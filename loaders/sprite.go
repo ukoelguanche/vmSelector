@@ -1,14 +1,30 @@
 package loaders
 
 import (
+	//"fmt"
+
+	"log"
+
 	"apodeiktikos.com/fbtest/model"
 )
 
-func LoadSprite(definitionPath string) *model.Sprite {
-	sprite := model.Sprite{}
+func LoadSprites(definitionPath string, sprites *model.Sprites) {
+	LoadJson(definitionPath, sprites)
 
-	LoadJson(definitionPath, &sprite)
-	sprite.Bitmap = LoadBitmap(sprite.SourceImage)
+	// Load all bitmaps
+	bitmaps := make(model.Bitmaps)
+	for name, path := range sprites.BitmapSources {
+		log.Printf("Loading bitmap source: %s %s", name, path)
+		bitmaps[name] = LoadBitmap(path)
+		bitmaps[name].Name = name
+	}
 
-	return &sprite
+	// Assign bitmap pointers to sprites
+	for name, sprite := range sprites.Sprites {
+		sprite.Name = name
+		sprite.Bitmap = bitmaps[sprite.BitmapSource]
+		log.Printf("Bitmap [%s] assigned to sprite: [%s]", sprite.BitmapSource, sprite.Name)
+	}
+	return
+
 }
