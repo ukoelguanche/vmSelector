@@ -50,6 +50,10 @@
       "Frames": [{"Point": {"X": 0, "Y": 192}, "Size": {"W": 3840, "H": 104}}],
       "Sequences": {
         "idle":  [0]
+      },
+      "PaletteSwap": {
+        "SourcePaletteName": "WaterSource",
+        "TargetPaletteName": "WaterTarget"
       }
     },
     "GreenHillForeground": {

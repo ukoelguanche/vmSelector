@@ -44,7 +44,7 @@ func Init() {
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 220, Y: 115}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 250, Y: 115}))
 
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 130}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 131}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillForeground", "idle", model.Point{X: 0, Y: 0}))
 	for y := 0; y < 13; y++ {
 		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: 100, Y: int32(y * 16)}))

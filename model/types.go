@@ -50,10 +50,15 @@ type SpriteInstance struct {
 	Position                Point
 	FrameIdx                int
 	CurrentSequence         []int
-	CurrentSequenceOffset   float32
+	SequenceOffset          float32
 	CurrentSequencePosition float32
 	SequenceLength          int
 	Scale                   float64
+
+	CurrentPalleteSwapOffset   float32
+	CurrentPalleteSwapPosition float32
+
+	PaletteSwapIndex int
 }
 
 type Text struct {
@@ -64,15 +69,18 @@ type Text struct {
 
 func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, position Point) *SpriteInstance {
 	sequence := sprites.Sprites[name].Sequences[sequenceName]
-	relativeSpeed := float32(0.5)
+	relativeSeqenceSpeed := float32(0.5)
+	relativePaletteSwapSpeed := float32(0.2)
 	spriteInstance := &SpriteInstance{
-		Sprite:                  sprites.Sprites[name],
-		Position:                position,
-		FrameIdx:                0,
-		CurrentSequence:         sequence,
-		CurrentSequenceOffset:   1 / float32(len(sequence)) * relativeSpeed,
-		CurrentSequencePosition: 0.0,
-		SequenceLength:          len(sequence),
+		Sprite:                     sprites.Sprites[name],
+		Position:                   position,
+		FrameIdx:                   0,
+		CurrentSequence:            sequence,
+		SequenceOffset:             1 / float32(len(sequence)) * relativeSeqenceSpeed,
+		CurrentSequencePosition:    0.0,
+		SequenceLength:             len(sequence),
+		CurrentPalleteSwapOffset:   1 / float32(len(sequence)) * relativePaletteSwapSpeed,
+		CurrentPalleteSwapPosition: 0.0,
 	}
 
 	return spriteInstance
@@ -80,16 +88,31 @@ func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, posi
 }
 
 func (s *SpriteInstance) NextFrame() {
-	s.CurrentSequencePosition += s.CurrentSequenceOffset
+	s.CurrentSequencePosition += s.SequenceOffset
 	if s.CurrentSequencePosition >= 1 {
 		s.CurrentSequencePosition = 0
 	}
+
+	if s.Sprite.PaletteSwap.TargetPalette == nil {
+		return
+	}
+
+	s.CurrentPalleteSwapPosition += s.CurrentPalleteSwapOffset
+	if s.CurrentPalleteSwapPosition >= 1 {
+		s.CurrentPalleteSwapPosition = 0
+	}
+
+	//s.PaletteSwapIndex = (s.PaletteSwapIndex + 1) % len(*s.Sprite.PaletteSwap.TargetPalette)
 	//s.FrameIdx = (s.FrameIdx + 1) % s.SequenceLength
 }
 
 func (s *SpriteInstance) CurrentFrame() Rect {
 	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
 	return s.Sprite.Frames[s.CurrentSequence[frame]]
+}
+
+func (s *SpriteInstance) CurrentSwapPaletteIndex() int {
+	return int(float32(len(*s.Sprite.PaletteSwap.TargetPalette)) * s.CurrentPalleteSwapPosition)
 }
 
 // ToDo: Change W, H to Size type
@@ -105,12 +128,8 @@ func (c Color) Byte() []byte {
 	return []byte{c.R, c.G, c.B, c.A}
 }
 
-type Gradient []Color
-
-/*
-
-func (g Gradient) GradientIndex(color []byte) int {
-	for i, c := range g {
+func (palette Palette) GradientIndex(color []byte) int {
+	for i, c := range palette {
 		if color[0] == c.R && color[1] == c.G && color[2] == c.B {
 			return i
 		}
@@ -118,6 +137,8 @@ func (g Gradient) GradientIndex(color []byte) int {
 
 	return -1
 }
+
+/*
 
 func (s Sprite) GetSection(sectionName string) SpriteDataSection {
 	rects, ok := s.Sections[sectionName]
