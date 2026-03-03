@@ -2,15 +2,15 @@ package drivers
 
 import (
 	"encoding/binary"
+	"log"
 	"os"
 	"syscall"
 )
 
 type inputEvent struct {
-	//Time  time.Val // Tiempo del evento
-	Type  uint16 // Tipo (EV_KEY para teclado)
-	Code  uint16 // Código de tecla (flecha arriba, abajo, enter...)
-	Value int32  // 1 para presionado, 0 para soltado, 2 para repetición
+	Type  uint16
+	Code  uint16
+	Value int32
 }
 
 const (
@@ -31,10 +31,9 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 		panic(err)
 	}
 
-	// Calculamos el tamaño exacto: 1280 * 720 * 4 = 3686400
 	size := sw * sh * 4
+	log.Printf("Screen size: %dx%d (%d)", sw, sh, size)
 
-	// MAPEAMOS la memoria física de la GPU a la memoria de Go
 	data, err := syscall.Mmap(int(f.Fd()), 0, size, syscall.PROT_WRITE|syscall.PROT_READ, syscall.MAP_SHARED)
 	if err != nil {
 		panic("Error en Mmap: " + err.Error())
@@ -42,7 +41,7 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 
 	return &Display{
 		file:   f,
-		pixels: data, // Ahora pixels apunta DIRECTAMENTE a la memoria de la tarjeta
+		pixels: data,
 	}
 }
 
@@ -51,9 +50,8 @@ func (d *Display) DrawPixel(vx, vy int32, c []byte) {
 		return
 	}
 
-	scaleX, scaleY := SW/VW+100, SH/VH
+	scaleX, scaleY := SW/VW, SH/VH
 
-	// Extraemos los componentes del color original (RGBA)
 	r, g, b, a := c[0], c[1], c[2], c[3]
 
 	for py := 0; py < scaleY; py++ {
@@ -123,22 +121,3 @@ func (d *Display) GetInput() (int32, int32, bool, bool) {
 }
 
 func (d *Display) Close() { d.file.Close() }
-
-/*
-func (d *Display) DrawSprite(sprite *model.Bitmap, x, y int32) {
-	for sy := 0; sy < sprite.H; sy++ {
-		for sx := 0; sx < sprite.W; sx++ {
-			srcOff := (sy*sprite.W + sx) * 4
-			color := sprite.Pixels[srcOff : srcOff+4]
-
-			// Si el píxel es transparente (Alpha < 128), no lo dibujamos
-			if color[3] < 128 {
-				continue
-			}
-
-			// Dibujamos el píxel usando nuestra lógica de "píxel gordo"
-			d.DrawPixel(x+int32(sx), y+int32(sy), color)
-		}
-	}
-}
-*/

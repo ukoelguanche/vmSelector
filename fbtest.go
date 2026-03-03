@@ -46,10 +46,13 @@ func Init() {
 
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 131}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillForeground", "idle", model.Point{X: 0, Y: 0}))
+
+	const hudOffset int32 = 155
+
 	for y := 0; y < 13; y++ {
-		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: 100, Y: int32(y * 16)}))
+		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: hudOffset, Y: int32(y * 16)}))
 	}
-	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: 130, Y: 56})
+	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 30, Y: 56})
 	spriteInstances = append(spriteInstances, ring)
 
 	texts = make([]*model.Text, 0)
@@ -65,10 +68,10 @@ func Init() {
 			text = vm.Name
 		}
 
-		texts = append(texts, &model.Text{Sprite: sprites.Sprites["BoldLetters"], Text: text, Position: model.Point{X: 136, Y: int32(i)*16 + 60}})
+		texts = append(texts, &model.Text{Sprite: sprites.Sprites["BoldLetters"], Text: text, Position: model.Point{X: hudOffset + 36, Y: int32(i)*16 + 60}})
 	}
 	texts[0].Position.X += 12
-	texts = append(texts, &model.Text{Sprite: sprites.Sprites["GenesisLetters"], Text: centinelVM.Name, Position: model.Point{X: 130, Y: 30}})
+	texts = append(texts, &model.Text{Sprite: sprites.Sprites["GenesisLetters"], Text: centinelVM.Name, Position: model.Point{X: hudOffset + 30, Y: 30}})
 
 	return
 
@@ -135,20 +138,3 @@ func main() {
 		}
 	}
 }
-
-/*
-
-	sourceGradient := []model.Color{
-		{R: 221, G: 119, B: 221, A: 255},
-		{R: 187, G: 85, B: 187, A: 255},
-		{R: 153, G: 51, B: 153, A: 255},
-		{R: 119, G: 17, B: 119, A: 255},
-	}
-
-	targetGradient := []model.Color{
-		{R: 151, G: 179, B: 246, A: 255},
-		{R: 115, G: 143, B: 245, A: 255},
-		{R: 115, G: 143, B: 177, A: 255},
-		{R: 187, G: 215, B: 249, A: 255},
-	}
-*/
