@@ -10,6 +10,7 @@ import (
 	"apodeiktikos.com/fbtest/drivers"
 	"apodeiktikos.com/fbtest/loaders"
 	"apodeiktikos.com/fbtest/model"
+	"apodeiktikos.com/fbtest/sprites"
 	"apodeiktikos.com/fbtest/util"
 )
 
@@ -20,53 +21,12 @@ var gpuString string
 var centinelVM *model.VM
 var vms []model.VM
 
-func DrawString(sprite *model.Sprite, text string, x, y int32, typography string) {
-	cursorX := x
-
-	letters := sprite.GetSection(typography)
-
-	for _, char := range text {
-		sChar := string(char)
-		rect, ok := letters[sChar]
-		if !ok {
-			cursorX += 8
-			continue
-		}
-
-		drivers.GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, cursorX, y)
-		cursorX += int32(rect.Size.W) + 1
-	}
-}
-
-func DrawSprite(sprite *model.Sprite, sectionName string, name string, X int32, Y int32) {
-	section := sprite.GetSection(sectionName)
-	rect := section.GetSprite(name)
-	drivers.GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
-}
-
-func DrawSpriteGradient(sprite *model.Sprite, sectionName string, name string, X int32, Y int32, sourceGradient model.Gradient, targetGradient model.Gradient, frameIndex int) {
-	normalizeFrameIndex := int(frameIndex / 5)
-	section := sprite.GetSection(sectionName)
-	rect := section.GetSprite(name)
-	drivers.GlobalDisplay.DrawSpriteRectGradient(sprite.Bitmap, rect, X, Y, sourceGradient, targetGradient, normalizeFrameIndex)
-}
-
-func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X int32, Y int32) {
-	normalizeFrameIndex := int(frameIndex / 5)
-	animation := sprite.GetAnimation(animationName)
-	rects := sprite.GetAnimationRects(animation.Section)
-
-	frames := animation.Frames
-
-	rect := rects[frames[normalizeFrameIndex%len(frames)]]
-
-	drivers.GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
-}
-
-var hub *model.Sprite
+var hud *model.Sprite
 var greenHill *model.Sprite
 var greenHillBack *model.Sprite
 var sonic *model.Sprite
+
+var ring sprites.Ring
 
 func GetVMsWithGPU(gpuString string, centinelVM *model.VM) []model.VM {
 	vms := model.GetVMs()
@@ -101,13 +61,21 @@ func Init() {
 	drivers.GlobalDisplay = drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
 
 	gpuString = util.ContextStorage.GpuString
-	centinelVM = model.GetVMByName(util.ContextStorage.CentineVMName)
-	vms = GetVMsWithGPU(gpuString, centinelVM)
+	centinelVM = nil //model.GetVMByName(util.ContextStorage.CentineVMName)
+	vms = append(vms, model.VM{Name: "Paranomos"})
+	vms = append(vms, model.VM{Name: "Nomikos"})
+	vms = append(vms, model.VM{Name: "Grafeio"})
+	vms = append(vms, model.VM{Name: "Apodeiktikos"})
 
-	hub = loaders.LoadSprite("./resources/sprites/HUD.json")
+	hud = loaders.LoadSprite("./resources/sprites/HUD.json")
 	greenHill = loaders.LoadSprite("./resources/sprites/GreenHill.json")
 	greenHillBack = loaders.LoadSprite("./resources/sprites/GreenHillBack.json")
 	sonic = loaders.LoadSprite("./resources/sprites/Sonic.json")
+
+	ring = sprites.Ring{
+		Sprite: model.Sprite{ /* ... */ },
+		Point:  model.Point{X: 100, Y: 100},
+	}
 
 }
 
@@ -125,7 +93,7 @@ func RenderHUD(animationIndex int, selectedVMIndex int) {
 	xOffset := initialPos - int32(initialPos*ease)
 
 	for i := 0; i < 13; i++ {
-		DrawSprite(hub, "items", "zigZagBG", 90+xOffset, int32(i*16))
+		drivers.DrawSprite(hud, "items", "zigZagBG", 90+xOffset, int32(i*16))
 	}
 
 	var HUDX int32 = 130 + xOffset
@@ -143,12 +111,12 @@ func RenderHUD(animationIndex int, selectedVMIndex int) {
 
 		if i == selectedVMIndex {
 			selectedOffset = 4
-			DrawAnimation(hub, "ring", animationIndex, HUDX-15, entryY+1)
+			drivers.DrawAnimation(hud, "ring", animationIndex, HUDX-15, entryY+1)
 		} else {
 			selectedOffset = 0
 		}
 
-		DrawString(hub, text, HUDX+selectedOffset, entryY+1, "genesisLetters")
+		drivers.DrawString(hud, text, HUDX+selectedOffset, entryY+1, "genesisLetters")
 	}
 }
 
@@ -178,23 +146,23 @@ func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 		{R: 187, G: 215, B: 249, A: 255},
 	}
 
-	DrawSprite(greenHillBack, "GreenHillBack", "layer6", 0-int32(float64(animationIndex)*0.2), 0)
-	DrawSprite(greenHillBack, "GreenHillBack", "layer5", 0-int32(float64(animationIndex)*0.1), 32)
-	DrawSprite(greenHillBack, "GreenHillBack", "layer4", 0-int32(float64(animationIndex)*0.05), 48)
-	DrawSprite(greenHillBack, "GreenHillBack", "layer3", 0, 64)
-	DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer2", 0, 112, sourceGradient, targetGradient, animationIndex)
-	DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer1", 0, 152, sourceGradient, targetGradient, animationIndex)
+	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer6", 0-int32(float64(animationIndex)*0.2), 0)
+	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer5", 0-int32(float64(animationIndex)*0.1), 32)
+	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer4", 0-int32(float64(animationIndex)*0.05), 48)
+	drivers.DrawSprite(greenHillBack, "GreenHillBack", "layer3", 0, 64)
+	drivers.DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer2", 0, 112, sourceGradient, targetGradient, animationIndex)
+	drivers.DrawSpriteGradient(greenHillBack, "GreenHillBack", "layer1", 0, 152, sourceGradient, targetGradient, animationIndex)
 
-	DrawSprite(greenHill, "GreenHill", "background", 0, 0)
+	drivers.DrawSprite(greenHill, "GreenHill", "background", 0, 0)
 
-	DrawAnimation(greenHill, "flower1", animationIndex, 154, 90)
-	DrawAnimation(greenHill, "flower2", animationIndex+15, -5, 115)
-	DrawAnimation(greenHill, "flower2", animationIndex+7, 220, 115)
-	DrawAnimation(greenHill, "flower2", animationIndex, 250, 115)
+	drivers.DrawAnimation(greenHill, "flower1", animationIndex, 154, 90)
+	drivers.DrawAnimation(greenHill, "flower2", animationIndex+15, -5, 115)
+	drivers.DrawAnimation(greenHill, "flower2", animationIndex+7, 220, 115)
+	drivers.DrawAnimation(greenHill, "flower2", animationIndex, 250, 115)
 
 	RenderHUD(animationIndex, selectedVMIndex)
 
-	DrawAnimation(sonic, "sonic", animationIndex, 35, 128)
+	drivers.DrawAnimation(sonic, "sonic", animationIndex, 35, 128)
 
 	drivers.GlobalDisplay.Present()
 }

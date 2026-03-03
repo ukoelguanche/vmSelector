@@ -31,13 +31,14 @@ type SpriteDefinition struct {
 
 // ToDo: Change W, H to Size type
 type Bitmap struct {
-	W, H   int
+	Size   Size
 	Pixels []byte
 }
 
 type Sprite struct {
-	Bitmap            *Bitmap
-	SourceImage       string
+	SourceImage string
+	Bitmap      *Bitmap
+
 	Sections          map[string]SpriteDataSection
 	AnimationSections map[string][]Rect
 	Animations        map[string]SpriteAnimation

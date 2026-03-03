@@ -9,6 +9,49 @@ const (
 
 var GlobalDisplay *Display
 
+func DrawString(sprite *model.Sprite, text string, x, y int32, typography string) {
+	cursorX := x
+
+	letters := sprite.GetSection(typography)
+
+	for _, char := range text {
+		sChar := string(char)
+		rect, ok := letters[sChar]
+		if !ok {
+			cursorX += 8
+			continue
+		}
+
+		GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, cursorX, y)
+		cursorX += int32(rect.Size.W) + 1
+	}
+}
+
+func DrawSprite(sprite *model.Sprite, sectionName string, name string, X int32, Y int32) {
+	section := sprite.GetSection(sectionName)
+	rect := section.GetSprite(name)
+	GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
+}
+
+func DrawSpriteGradient(sprite *model.Sprite, sectionName string, name string, X int32, Y int32, sourceGradient model.Gradient, targetGradient model.Gradient, frameIndex int) {
+	normalizeFrameIndex := int(frameIndex / 5)
+	section := sprite.GetSection(sectionName)
+	rect := section.GetSprite(name)
+	GlobalDisplay.DrawSpriteRectGradient(sprite.Bitmap, rect, X, Y, sourceGradient, targetGradient, normalizeFrameIndex)
+}
+
+func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X int32, Y int32) {
+	normalizeFrameIndex := int(frameIndex / 5)
+	animation := sprite.GetAnimation(animationName)
+	rects := sprite.GetAnimationRects(animation.Section)
+
+	frames := animation.Frames
+
+	rect := rects[frames[normalizeFrameIndex%len(frames)]]
+
+	GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, X, Y)
+}
+
 func (d *Display) FillRect(rect model.Rect, color []byte) {
 	for y := 0; y < rect.Size.H; y++ {
 		for x := 0; x < rect.Size.W; x++ {
@@ -25,11 +68,11 @@ func (d *Display) DrawSpriteRect(sprite *model.Bitmap, src model.Rect, destX, de
 			origY := src.Point.Y + sy
 
 			// Seguridad: no leer fuera de la imagen original
-			if origX < 0 || origX >= sprite.W || origY < 0 || origY >= sprite.H {
+			if origX < 0 || origX >= sprite.Size.W || origY < 0 || origY >= sprite.Size.H {
 				continue
 			}
 
-			srcOff := (origY*sprite.W + origX) * 4
+			srcOff := (origY*sprite.Size.W + origX) * 4
 			color := sprite.Pixels[srcOff : srcOff+4]
 
 			// Transparencia
@@ -49,11 +92,11 @@ func (d *Display) DrawSpriteRectGradient(sprite *model.Bitmap, src model.Rect, d
 			origX := src.Point.X + sx
 			origY := src.Point.Y + sy
 
-			if origX < 0 || origX >= sprite.W || origY < 0 || origY >= sprite.H {
+			if origX < 0 || origX >= sprite.Size.W || origY < 0 || origY >= sprite.Size.H {
 				continue
 			}
 
-			srcOff := (origY*sprite.W + sx + src.Point.X) * 4 // Asegúrate de sumar el offset X correctamente
+			srcOff := (origY*sprite.Size.W + sx + src.Point.X) * 4 // Asegúrate de sumar el offset X correctamente
 			color := sprite.Pixels[srcOff : srcOff+4]
 
 			if color[3] < 128 {

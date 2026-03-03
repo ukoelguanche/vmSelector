@@ -35,5 +35,5 @@ func LoadBitmap(path string) *model.Bitmap {
 			pixels[offset+3] = byte(a >> 8)
 		}
 	}
-	return &model.Bitmap{W: w, H: h, Pixels: pixels}
+	return &model.Bitmap{Size: model.Size{W: w, H: h}, Pixels: pixels}
 }
