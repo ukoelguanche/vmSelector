@@ -25,6 +25,16 @@ func LoadSprites(definitionPath string, sprites *model.Sprites) {
 		sprite.Bitmap = bitmaps[sprite.BitmapSource]
 		log.Printf("Bitmap [%s] assigned to sprite: [%s]", sprite.BitmapSource, sprite.Name)
 	}
-	return
 
+	// Assign palete pointers to sprites
+	for _, sprite := range sprites.Sprites {
+		if sprite.PaletteSwap.SourcePaletteName != "" {
+			sprite.PaletteSwap.SourcePalette = sprites.Palettes[sprite.PaletteSwap.SourcePaletteName]
+			log.Printf("Source palette [%s] assigned to sprite: [%s]", sprite.PaletteSwap.SourcePaletteName, sprite.Name)
+		}
+		if sprite.PaletteSwap.TargetPaletteName != "" {
+			sprite.PaletteSwap.TargetPalette = sprites.Palettes[sprite.PaletteSwap.TargetPaletteName]
+			log.Printf("Target palette [%s] assigned to sprite: [%s]", sprite.PaletteSwap.TargetPaletteName, sprite.Name)
+		}
+	}
 }

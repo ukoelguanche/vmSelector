@@ -39,6 +39,10 @@
       "Frames": [{"Point": {"X": 0, "Y": 144}, "Size": {"W": 3840, "H": 40}}],
       "Sequences": {
         "idle":  [0]
+      },
+      "PaletteSwap": {
+        "SourcePaletteName": "WaterSource",
+        "TargetPaletteName": "WaterTarget"
       }
     },
     "GreenHillBackgroundLayer6": {
@@ -48,9 +52,6 @@
         "idle":  [0]
       }
     },
-
-
-
     "GreenHillForeground": {
       "BitmapSource": "greenHill",
       "Frames": [{"Point": {"X": 100, "Y": 180}, "Size": {"W": 320, "H": 200}}],
@@ -350,5 +351,19 @@
         "idle":  [0]
       }
     }
+  },
+  "Palettes": {
+    "WaterSource": [
+      {"R": 221, "G": 119, "B": 221, "A": 255},
+      {"R": 187, "G": 85, "B": 187, "A": 255},
+      {"R": 153, "G": 51, "B": 153, "A": 255},
+      {"R": 119, "G": 17, "B": 119, "A": 255}
+    ],
+    "WaterTarget": [
+      {"R": 151, "G": 179, "B": 246, "A": 255},
+      {"R": 115, "G": 143, "B": 245, "A": 255},
+      {"R": 115, "G": 143, "B": 177, "A": 255},
+      {"R": 187, "G": 215, "B": 249, "A": 255}
+    ]
   }
 }

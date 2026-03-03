@@ -19,7 +19,7 @@ func DrawText(text *model.Text) {
 		sChar := string(char)
 		rect := letters[characters[sChar]]
 
-		GlobalDisplay.DrawSpriteRect(text.Sprite.Bitmap, rect, cursorX, text.Position.Y)
+		GlobalDisplay.DrawSpriteRect(text.Sprite, rect, cursorX, text.Position.Y)
 		cursorX += int32(rect.Size.W) + 1
 	}
 
@@ -53,7 +53,7 @@ func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X
 */
 
 func DrawAnimation(sprite *model.SpriteInstance) {
-	GlobalDisplay.DrawSpriteRect(sprite.Sprite.Bitmap, sprite.CurrentFrame(), sprite.Position.X, sprite.Position.Y)
+	GlobalDisplay.DrawSpriteRect(sprite.Sprite, sprite.CurrentFrame(), sprite.Position.X, sprite.Position.Y)
 }
 
 func (d *Display) FillRect(rect model.Rect, color []byte) {
@@ -64,7 +64,8 @@ func (d *Display) FillRect(rect model.Rect, color []byte) {
 	}
 }
 
-func (d *Display) DrawSpriteRect(sprite *model.Bitmap, src model.Rect, destX, destY int32) {
+func (d *Display) DrawSpriteRect(sprite *model.Sprite, src model.Rect, destX, destY int32) {
+	bitmap := sprite.Bitmap
 	for sy := 0; sy < int(src.Size.H); sy++ {
 		for sx := 0; sx < int(src.Size.W); sx++ {
 			// Calculamos la posición real dentro del PNG original
@@ -72,12 +73,12 @@ func (d *Display) DrawSpriteRect(sprite *model.Bitmap, src model.Rect, destX, de
 			origY := src.Point.Y + int32(sy)
 
 			// Seguridad: no leer fuera de la imagen original
-			if origX < 0 || origX >= sprite.Size.W || origY < 0 || origY >= sprite.Size.H {
+			if origX < 0 || origX >= bitmap.Size.W || origY < 0 || origY >= bitmap.Size.H {
 				continue
 			}
 
-			srcOff := (origY*sprite.Size.W + origX) * 4
-			color := sprite.Pixels[srcOff : srcOff+4]
+			srcOff := (origY*bitmap.Size.W + origX) * 4
+			color := bitmap.Pixels[srcOff : srcOff+4]
 
 			// Transparencia
 			if color[3] < 128 {

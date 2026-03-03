@@ -13,6 +13,22 @@ type Rect struct {
 	Size  Size
 }
 
+type Color struct {
+	R uint8
+	G uint8
+	B uint8
+	A uint8
+}
+
+type Palette []Color
+
+type PaletteSwap struct {
+	SourcePaletteName string
+	TargetPaletteName string
+	SourcePalette     *Palette
+	TargetPalette     *Palette
+}
+
 type Sprite struct {
 	Name         string
 	BitmapSource string `json:"BitmapSource"`
@@ -20,11 +36,13 @@ type Sprite struct {
 	Frames       []Rect           `json:"Frames"`
 	Sequences    map[string][]int `json:"Sequences"`
 	Characters   map[string]int   `json:"Characters"`
+	PaletteSwap  PaletteSwap      `json:"PaletteSwap"`
 }
 
 type Sprites struct {
-	BitmapSources map[string]string  `json:"BitmapSources"`
-	Sprites       map[string]*Sprite `json:"sprites"`
+	BitmapSources map[string]string   `json:"BitmapSources"`
+	Sprites       map[string]*Sprite  `json:"sprites"`
+	Palettes      map[string]*Palette `json:"Palettes"`
 }
 
 type SpriteInstance struct {
@@ -82,13 +100,6 @@ type Bitmap struct {
 }
 
 type Bitmaps map[string]*Bitmap
-
-type Color struct {
-	R uint8
-	G uint8
-	B uint8
-	A uint8
-}
 
 func (c Color) Byte() []byte {
 	return []byte{c.R, c.G, c.B, c.A}
