@@ -23,14 +23,13 @@ func DrawText(text *model.Text) {
 		sChar := string(char)
 		rect := letters[characters[sChar]]
 
-		GlobalDisplay.DrawTextRect(text, rect, cursorX, text.Position.Y)
+		GlobalDisplay.DrawSpriteRect(text, rect, cursorX, text.Position.Y)
 		cursorX += int32(rect.Size.W) + 1
 	}
-
 }
 
-func (d *Display) DrawTextRect(sprite *model.Text, rect model.Rect, destX, destY int32) {
-	bitmap := sprite.Sprite.Bitmap
+func (d *Display) DrawSpriteRect(sprite model.Renderable, rect model.Rect, destX, destY int32) {
+	bitmap := sprite.GetBitmap()
 	for sy := 0; sy < int(rect.Size.H); sy++ {
 		for sx := 0; sx < int(rect.Size.W); sx++ {
 			// Calculate original position inside bitmap
@@ -49,57 +48,10 @@ func (d *Display) DrawTextRect(sprite *model.Text, rect model.Rect, destX, destY
 			if color[3] < 128 {
 				continue
 			}
-
-			d.DrawPixel(destX+int32(sx), destY+int32(sy), color)
-		}
-	}
-}
-
-func (d *Display) DrawSpriteRect(sprite *model.SpriteInstance, rect model.Rect, destX, destY int32) {
-	sourcePalette := sprite.Sprite.PaletteSwap.SourcePalette
-	targetPalette := sprite.Sprite.PaletteSwap.TargetPalette
-
-	bitmap := sprite.Sprite.Bitmap
-	for sy := 0; sy < int(rect.Size.H); sy++ {
-		for sx := 0; sx < int(rect.Size.W); sx++ {
-			// Calculate original position inside bitmap
-			origX := rect.Point.X + int32(sx)
-			origY := rect.Point.Y + int32(sy)
-
-			// Avoid drawing outside bounds
-			if origX < 0 || origX >= bitmap.Size.W || origY < 0 || origY >= bitmap.Size.H {
-				continue
-			}
-
-			srcOff := (origY*bitmap.Size.W + origX) * 4
-			color := bitmap.Pixels[srcOff : srcOff+4]
-
-			// Skip transparencies
-			if color[3] < 128 {
-				continue
-			}
-
-			var finalColor []byte
-			if sprite.Sprite.PaletteSwap.TargetPalette != nil {
-				finalColor = ReplacePalette(color, sourcePalette, targetPalette, sprite.CurrentSwapPaletteIndex())
-			} else {
-				finalColor = color
-			}
+			
+			finalColor := sprite.ProcessColor(color)
 
 			d.DrawPixel(destX+int32(sx), destY+int32(sy), finalColor)
 		}
 	}
-}
-
-func ReplacePalette(color []byte, sourcePalette *model.Palette, targetPalette *model.Palette, animationIndex int) []byte {
-	if sourcePalette == nil || targetPalette == nil {
-		return color
-	}
-
-	gradientIndex := sourcePalette.GradientIndex(color)
-
-	if gradientIndex >= 0 {
-		return (*targetPalette)[(gradientIndex+animationIndex)%len(*targetPalette)].Byte()
-	}
-	return color
 }

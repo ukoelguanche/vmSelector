@@ -45,6 +45,12 @@ type Sprites struct {
 	Palettes      map[string]*Palette `json:"Palettes"`
 }
 
+type Renderable interface {
+	GetBitmap() *Bitmap
+	GetSprite() *Sprite
+	ProcessColor(color []byte) []byte
+}
+
 type SpriteInstance struct {
 	Sprite                  *Sprite
 	Position                Point
@@ -61,10 +67,53 @@ type SpriteInstance struct {
 	PaletteSwapIndex int
 }
 
+func (si *SpriteInstance) GetSprite() *Sprite {
+	return si.Sprite
+}
+
+func (si *SpriteInstance) GetBitmap() *Bitmap {
+	return si.Sprite.Bitmap
+}
+
+func ReplacePalette(color []byte, sourcePalette *Palette, targetPalette *Palette, animationIndex int) []byte {
+	if sourcePalette == nil || targetPalette == nil {
+		return color
+	}
+
+	gradientIndex := sourcePalette.GradientIndex(color)
+
+	if gradientIndex >= 0 {
+		return (*targetPalette)[(gradientIndex+animationIndex)%len(*targetPalette)].Byte()
+	}
+	return color
+}
+
+func (si *SpriteInstance) ProcessColor(color []byte) []byte {
+	if si.Sprite.PaletteSwap.TargetPalette != nil {
+		return ReplacePalette(color,
+			si.Sprite.PaletteSwap.SourcePalette,
+			si.Sprite.PaletteSwap.TargetPalette,
+			si.CurrentSwapPaletteIndex())
+	}
+	return color
+}
+
 type Text struct {
 	Sprite   *Sprite
 	Position Point
 	Text     string
+}
+
+func (t *Text) GetSprite() *Sprite {
+	return t.Sprite
+}
+
+func (t *Text) GetBitmap() *Bitmap {
+	return t.Sprite.Bitmap
+}
+
+func (t *Text) ProcessColor(color []byte) []byte {
+	return color
 }
 
 func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, position Point) *SpriteInstance {
@@ -115,7 +164,6 @@ func (s *SpriteInstance) CurrentSwapPaletteIndex() int {
 	return int(float32(len(*s.Sprite.PaletteSwap.TargetPalette)) * s.CurrentPalleteSwapPosition)
 }
 
-// ToDo: Change W, H to Size type
 type Bitmap struct {
 	Name   string
 	Size   Size
