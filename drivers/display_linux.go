@@ -4,8 +4,6 @@ import (
 	"encoding/binary"
 	"os"
 	"syscall"
-
-	"apodeiktikos.com/fbtest/model"
 )
 
 type inputEvent struct {
@@ -53,7 +51,7 @@ func (d *Display) DrawPixel(vx, vy int32, c []byte) {
 		return
 	}
 
-	scaleX, scaleY := SW/VW, SH/VH
+	scaleX, scaleY := SW/VW+100, SH/VH
 
 	// Extraemos los componentes del color original (RGBA)
 	r, g, b, a := c[0], c[1], c[2], c[3]
@@ -126,6 +124,7 @@ func (d *Display) GetInput() (int32, int32, bool, bool) {
 
 func (d *Display) Close() { d.file.Close() }
 
+/*
 func (d *Display) DrawSprite(sprite *model.Bitmap, x, y int32) {
 	for sy := 0; sy < sprite.H; sy++ {
 		for sx := 0; sx < sprite.W; sx++ {
@@ -142,3 +141,4 @@ func (d *Display) DrawSprite(sprite *model.Bitmap, x, y int32) {
 		}
 	}
 }
+*/

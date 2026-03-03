@@ -9,25 +9,23 @@ const (
 
 var GlobalDisplay *Display
 
-/*
-func DrawString(sprite *model.Sprite, text string, x, y int32, typography string) {
-	cursorX := x
+func DrawText(text *model.Text) {
+	cursorX := text.Position.X
 
-	letters := sprite.GetSection(typography)
+	letters := text.Sprite.Frames
+	characters := text.Sprite.Characters
 
-	for _, char := range text {
+	for _, char := range text.Text {
 		sChar := string(char)
-		rect, ok := letters[sChar]
-		if !ok {
-			cursorX += 8
-			continue
-		}
+		rect := letters[characters[sChar]]
 
-		GlobalDisplay.DrawSpriteRect(sprite.Bitmap, rect, cursorX, y)
+		GlobalDisplay.DrawSpriteRect(text.Sprite.Bitmap, rect, cursorX, text.Position.Y)
 		cursorX += int32(rect.Size.W) + 1
 	}
+
 }
 
+/*
 func DrawSprite(sprite *model.Sprite, sectionName string, name string, X int32, Y int32) {
 	section := sprite.GetSection(sectionName)
 	rect := section.GetSprite(name)

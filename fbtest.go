@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
-	//"fmt"
 	_ "image/png"
-	//"log"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
@@ -23,52 +20,15 @@ var vms []model.VM
 
 var sprites model.Sprites
 var spriteInstances []*model.SpriteInstance
-
-/*
-func GetVMsWithGPU(gpuString string, centinelVM *model.VM) []model.VM {
-	vms := model.GetVMs()
-	if vms == nil {
-		log.Fatal("Could not find any VMs")
-	}
-
-	var filtered []model.VM
-
-	for _, vm := range vms.Data {
-		if vm.HasSpecificGPU(gpuString) && vm.Name != centinelVM.Name {
-			filtered = append(filtered, vm)
-		}
-	}
-
-	filtered = append(filtered, *centinelVM)
-
-	return filtered
-}
-*/
-
-func SwitchToVM(centinelVM *model.VM, targetVM model.VM) {
-	if centinelVM.VMID == targetVM.VMID {
-		model.SetVMDescription(centinelVM, "power_off")
-	} else {
-		model.SetVMDescription(centinelVM, fmt.Sprintf("target_vm_id %d", targetVM.VMID))
-	}
-	model.PowerOffVM(centinelVM)
-}
+var texts []*model.Text
 
 func Init() {
 	util.LoadContext()
 	drivers.GlobalDisplay = drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
 
-	gpuString = util.ContextStorage.GpuString
-	centinelVM = nil //model.GetVMByName(util.ContextStorage.CentineVMName)
-	vms = append(vms, model.VM{Name: "Paranomos"})
-	vms = append(vms, model.VM{Name: "Nomikos"})
-	vms = append(vms, model.VM{Name: "Grafeio"})
-	vms = append(vms, model.VM{Name: "Apodeiktikos"})
-
 	loaders.LoadSprites("./resources/sprites/Sprites.json", &sprites)
 
 	spriteInstances = make([]*model.SpriteInstance, 0)
-	//spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: 50, Y: 50}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer1", "idle", model.Point{X: 0, Y: 0}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer2", "idle", model.Point{X: 0, Y: 32}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer3", "idle", model.Point{X: 0, Y: 48}))
@@ -76,11 +36,28 @@ func Init() {
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", model.Point{X: 0, Y: 112}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", model.Point{X: 0, Y: 152}))
 
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower1", "idle", model.Point{X: 154, Y: 90}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: -5, Y: 115}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 220, Y: 115}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 250, Y: 115}))
+
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 130}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillForeground", "idle", model.Point{X: 0, Y: 0}))
-	//spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 0, Y: 0}))
 	for y := 0; y < 13; y++ {
-		// spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: 100, Y: int32(y * 16)}))
+		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: 100, Y: int32(y * 16)}))
 	}
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: 130, Y: 50}))
+
+	texts = make([]*model.Text, 0)
+
+	gpuString = util.ContextStorage.GpuString
+	centinelVM = model.GetVMByName(util.ContextStorage.CentineVMName)
+	vms = model.GetVMsWithGPU(gpuString, centinelVM)
+	for i, vm := range vms {
+		texts = append(texts, &model.Text{Sprite: sprites.Sprites["GenesisLetters"], Text: vm.Name, Position: model.Point{X: 130, Y: int32(i)*20 + 30}})
+	}
+
+	return
 
 }
 
@@ -146,6 +123,10 @@ func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 		spriteInstance.NextFrame()
 	}
 
+	for _, text := range texts {
+		drivers.DrawText(text)
+	}
+
 	/*
 
 		sourceGradient := []model.Color{
@@ -200,7 +181,7 @@ func main() {
 		}
 		if enter {
 			endLoop = true
-			SwitchToVM(centinelVM, vms[selectedVMIndex])
+			model.SwitchToVM(centinelVM, vms[selectedVMIndex])
 		}
 
 		if (dx > 0 || dy > 0) && selectedVMIndex < len(vms) {

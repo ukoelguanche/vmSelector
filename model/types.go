@@ -19,6 +19,7 @@ type Sprite struct {
 	Bitmap       *Bitmap
 	Frames       []Rect           `json:"Frames"`
 	Sequences    map[string][]int `json:"Sequences"`
+	Characters   map[string]int   `json:"Characters"`
 }
 
 type Sprites struct {
@@ -35,6 +36,12 @@ type SpriteInstance struct {
 	CurrentSequencePosition float32
 	SequenceLength          int
 	Scale                   float64
+}
+
+type Text struct {
+	Sprite   *Sprite
+	Position Point
+	Text     string
 }
 
 func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, position Point) *SpriteInstance {

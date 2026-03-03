@@ -98,3 +98,31 @@ func GetRunningVMWithGPU() *VM {
 
 	return nil
 }
+
+func GetVMsWithGPU(gpuString string, centinelVM *VM) []VM {
+	vms := GetVMs()
+	if vms == nil {
+		log.Fatal("Could not find any VMs")
+	}
+
+	var filtered []VM
+
+	for _, vm := range vms.Data {
+		if vm.HasSpecificGPU(gpuString) && vm.Name != centinelVM.Name {
+			filtered = append(filtered, vm)
+		}
+	}
+
+	filtered = append(filtered, *centinelVM)
+
+	return filtered
+}
+
+func SwitchToVM(centinelVM *VM, targetVM VM) {
+	if centinelVM.VMID == targetVM.VMID {
+		SetVMDescription(centinelVM, "power_off")
+	} else {
+		SetVMDescription(centinelVM, fmt.Sprintf("target_vm_id %d", targetVM.VMID))
+	}
+	PowerOffVM(centinelVM)
+}
