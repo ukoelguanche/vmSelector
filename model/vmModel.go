@@ -41,14 +41,14 @@ func (vm *VM) String() string {
 	return fmt.Sprintf("[%s|%d]", vm.Name, vm.VMID)
 }
 
-func (vmA *VM) equals(vmB *VM) bool {
+func (vmA *VM) Equals(vmB *VM) bool {
 	if vmA == nil && vmB == nil {
 		return true
 	}
 	return vmA != nil && vmB != nil && vmA.VMID == vmB.VMID
 }
 
-func (vm *VM) getOS() string {
+func (vm *VM) GetOS() string {
 	description := vm.Config["description"].(string)
 	lines := strings.Split(description, "\n")
 

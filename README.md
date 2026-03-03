@@ -38,3 +38,6 @@ Test with noise
 ```shell
 cat /dev/urandom > /dev/fb0
 ```
+
+
+
