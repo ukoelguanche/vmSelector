@@ -1,8 +1,63 @@
 {
   "BitmapSources": {
-    "hud": "./resources/sprites/HUD.png"
+    "hud": "./resources/sprites/HUD.png",
+    "sonic": "./resources/sprites/Sonic.png",
+    "greenHill": "./resources/sprites/GreenHill.png",
+    "GreenHillBack": "./resources/sprites/GreenHillBack.png"
   },
   "Sprites": {
+    "GreenHillBackgroundLayer1": {
+      "BitmapSource": "GreenHillBack",
+      "Frames": [{"Point": {"X": 0, "Y": 0}, "Size": {"W": 3840, "H": 32}}],
+      "Sequences": {
+        "idle":  [0]
+      }
+    },
+    "GreenHillBackgroundLayer2": {
+      "BitmapSource": "GreenHillBack",
+      "Frames": [{"Point": {"X": 0, "Y": 40}, "Size": {"W": 3840, "H": 16}}],
+      "Sequences": {
+        "idle":  [0]
+      }
+    },
+    "GreenHillBackgroundLayer3": {
+      "BitmapSource": "GreenHillBack",
+      "Frames": [{"Point": {"X": 0, "Y": 64}, "Size": {"W": 3840, "H": 16}}],
+      "Sequences": {
+        "idle":  [0]
+      }
+    },
+    "GreenHillBackgroundLayer4": {
+      "BitmapSource": "GreenHillBack",
+      "Frames": [{"Point": {"X": 0, "Y": 88}, "Size": {"W": 3840, "H": 48}}],
+      "Sequences": {
+        "idle":  [0]
+      }
+    },
+    "GreenHillBackgroundLayer5": {
+      "BitmapSource": "GreenHillBack",
+      "Frames": [{"Point": {"X": 0, "Y": 144}, "Size": {"W": 3840, "H": 40}}],
+      "Sequences": {
+        "idle":  [0]
+      }
+    },
+    "GreenHillBackgroundLayer6": {
+      "BitmapSource": "GreenHillBack",
+      "Frames": [{"Point": {"X": 0, "Y": 192}, "Size": {"W": 3840, "H": 104}}],
+      "Sequences": {
+        "idle":  [0]
+      }
+    },
+
+
+
+    "GreenHillForeground": {
+      "BitmapSource": "greenHill",
+      "Frames": [{"Point": {"X": 100, "Y": 180}, "Size": {"W": 320, "H": 200}}],
+      "Sequences": {
+        "idle":  [0]
+      }
+    },
     "Ring": {
       "BitmapSource": "hud",
       "Frames": [
@@ -19,7 +74,29 @@
       ],
       "Sequences": {
         "idle":  [0, 1, 2, 3],
-        "fade":  [4, 5, 6, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+        "fade":  [4, 5, 6, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+      }
+    },
+    "Sonic": {
+      "BitmapSource": "sonic",
+      "Frames": [
+        {"Point": {"X": 0,  "Y": 0}, "Size": {"W": 30, "H": 40}},
+        {"Point": {"X": 34,  "Y": 0}, "Size": {"W": 30, "H": 40}},
+        {"Point": {"X": 66,  "Y": 0}, "Size": {"W": 30, "H": 40}},
+        {"Point": {"X": 98,  "Y": 0}, "Size": {"W": 30, "H": 40}},
+        {"Point": {"X": 130,  "Y": 0}, "Size": {"W": 30, "H": 40}}
+      ],
+      "Sequences": {
+        "idle": [0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4 , 3, 3, 4, 4, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0]
+      }
+    },
+    "ZigZag": {
+      "BitmapSource": "hud",
+      "Frames": [
+        {"Point": {"X": 0, "Y": 198}, "Size": {"W": 250, "H": 16}}
+      ],
+      "Sequences": {
+        "idle":  [0]
       }
     }
   }

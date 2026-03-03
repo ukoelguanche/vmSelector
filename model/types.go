@@ -27,22 +27,27 @@ type Sprites struct {
 }
 
 type SpriteInstance struct {
-	Sprite          *Sprite
-	Position        Point
-	FrameIdx        int
-	CurrentSequence []int
-	SequenceLength  int
-	Scale           float64
+	Sprite                  *Sprite
+	Position                Point
+	FrameIdx                int
+	CurrentSequence         []int
+	CurrentSequenceOffset   float32
+	CurrentSequencePosition float32
+	SequenceLength          int
+	Scale                   float64
 }
 
 func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, position Point) *SpriteInstance {
 	sequence := sprites.Sprites[name].Sequences[sequenceName]
+	relativeSpeed := float32(0.5)
 	spriteInstance := &SpriteInstance{
-		Sprite:          sprites.Sprites[name],
-		Position:        position,
-		FrameIdx:        0,
-		CurrentSequence: sequence,
-		SequenceLength:  len(sequence),
+		Sprite:                  sprites.Sprites[name],
+		Position:                position,
+		FrameIdx:                0,
+		CurrentSequence:         sequence,
+		CurrentSequenceOffset:   1 / float32(len(sequence)) * relativeSpeed,
+		CurrentSequencePosition: 0.0,
+		SequenceLength:          len(sequence),
 	}
 
 	return spriteInstance
@@ -50,11 +55,16 @@ func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, posi
 }
 
 func (s *SpriteInstance) NextFrame() {
-	s.FrameIdx = (s.FrameIdx + 1) % s.SequenceLength
+	s.CurrentSequencePosition += s.CurrentSequenceOffset
+	if s.CurrentSequencePosition >= 1 {
+		s.CurrentSequencePosition = 0
+	}
+	//s.FrameIdx = (s.FrameIdx + 1) % s.SequenceLength
 }
 
 func (s *SpriteInstance) CurrentFrame() Rect {
-	return s.Sprite.Frames[s.CurrentSequence[s.FrameIdx]]
+	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
+	return s.Sprite.Frames[s.CurrentSequence[frame]]
 }
 
 // ToDo: Change W, H to Size type

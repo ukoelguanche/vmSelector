@@ -22,7 +22,7 @@ var centinelVM *model.VM
 var vms []model.VM
 
 var sprites model.Sprites
-var ring *model.SpriteInstance
+var spriteInstances []*model.SpriteInstance
 
 /*
 func GetVMsWithGPU(gpuString string, centinelVM *model.VM) []model.VM {
@@ -67,9 +67,20 @@ func Init() {
 
 	loaders.LoadSprites("./resources/sprites/Sprites.json", &sprites)
 
-	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: 50, Y: 50})
-	return
-	////&model.SpriteInstance.Init("Ring", 50, 50)
+	spriteInstances = make([]*model.SpriteInstance, 0)
+	//spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: 50, Y: 50}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer1", "idle", model.Point{X: 0, Y: 0}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer2", "idle", model.Point{X: 0, Y: 32}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer3", "idle", model.Point{X: 0, Y: 48}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer4", "idle", model.Point{X: 0, Y: 64}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", model.Point{X: 0, Y: 112}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", model.Point{X: 0, Y: 152}))
+
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillForeground", "idle", model.Point{X: 0, Y: 0}))
+	//spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 0, Y: 0}))
+	for y := 0; y < 13; y++ {
+		// spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: 100, Y: int32(y * 16)}))
+	}
 
 }
 
@@ -130,8 +141,10 @@ func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 		drivers.GlobalDisplay.FillRect(fondoRect, colorFondo)
 	*/
 
-	drivers.DrawAnimation(ring)
-	ring.NextFrame()
+	for _, spriteInstance := range spriteInstances {
+		drivers.DrawAnimation(spriteInstance)
+		spriteInstance.NextFrame()
+	}
 
 	/*
 

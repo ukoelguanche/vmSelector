@@ -55,15 +55,6 @@ func DrawAnimation(sprite *model.Sprite, animationName string, frameIndex int, X
 */
 
 func DrawAnimation(sprite *model.SpriteInstance) {
-	/*
-		normalizeFrameIndex := int(frameIndex / 5)
-		animation := sprite.GetAnimation(animationName)
-		rects := sprite.GetAnimationRects(animation.Section)
-
-		frames := animation.Frames
-
-		rect := rects[frames[normalizeFrameIndex%len(frames)]]
-	*/
 	GlobalDisplay.DrawSpriteRect(sprite.Sprite.Bitmap, sprite.CurrentFrame(), sprite.Position.X, sprite.Position.Y)
 }
 
