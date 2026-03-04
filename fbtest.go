@@ -3,6 +3,7 @@ package main
 import (
 	_ "image/png"
 	"math"
+	"math/rand"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
@@ -20,6 +21,8 @@ var vms []model.VM
 
 var sprites model.Sprites
 var ring *model.SpriteInstance
+var sonic *model.SpriteInstance
+
 var spriteInstances []*model.SpriteInstance
 var texts []*model.Text
 
@@ -33,9 +36,19 @@ func Init() {
 
 	spriteInstances = make([]*model.SpriteInstance, 0)
 
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer1", "idle", model.Point{X: 0, Y: 0}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer2", "idle", model.Point{X: 0, Y: 32}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer3", "idle", model.Point{X: 0, Y: 48}))
+	layer1 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer1", "idle", model.Point{X: 0, Y: 0})
+	layer1.TargetPosition.X = -3000
+	layer1.Speed = 3
+	spriteInstances = append(spriteInstances, layer1)
+
+	layer2 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer2", "idle", model.Point{X: 0, Y: 32})
+	layer2.TargetPosition.X = -3000
+	layer2.Speed = 2
+	spriteInstances = append(spriteInstances, layer2)
+	layer3 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer3", "idle", model.Point{X: 0, Y: 48})
+	layer3.TargetPosition.X = -3000
+	layer3.Speed = 1
+	spriteInstances = append(spriteInstances, layer3)
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer4", "idle", model.Point{X: 0, Y: 64}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", model.Point{X: 0, Y: 112}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", model.Point{X: 0, Y: 152}))
@@ -45,15 +58,18 @@ func Init() {
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 220, Y: 115}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 250, Y: 115}))
 
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 131}))
+	sonic = model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 131})
+	sonic.OnComplete = OnComplete
+	spriteInstances = append(spriteInstances, sonic)
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillForeground", "idle", model.Point{X: 0, Y: 0}))
 
-	const hudOffset int32 = 155
+	const hudOffset int32 = 175
 
 	for y := 0; y < 13; y++ {
 		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: hudOffset, Y: int32(y * 16)}))
 	}
-	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 30, Y: 56})
+	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
+	ring.OnComplete = OnComplete
 	spriteInstances = append(spriteInstances, ring)
 
 	texts = make([]*model.Text, 0)
@@ -69,13 +85,13 @@ func Init() {
 			text = vm.Name
 		}
 
-		textInstance := model.BuildTextInstance(sprites.Sprites["BoldLetters"], text, model.Point{X: hudOffset + 36, Y: int32(i)*16 + 60})
+		textInstance := model.BuildTextInstance(sprites.Sprites["BoldLetters"], text, model.Point{X: hudOffset + 30, Y: int32(i)*16 + 60})
 		texts = append(texts, textInstance)
 	}
 
 	texts[0].Position.X += 12
 	texts[0].TargetPosition.X += 12
-	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 30, Y: 30}))
+	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
 
 	return
 
@@ -95,19 +111,34 @@ func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
 	}
 
 	drivers.GlobalDisplay.Present()
+}
 
+func OnComplete(sprite *model.SpriteInstance) {
+	if sprite == sonic {
+		keys := make([]string, 0, len(sprite.Sprite.Sequences))
+		for k := range sprite.Sprite.Sequences {
+			keys = append(keys, k)
+		}
+		randomSequence := keys[rand.Intn(len(keys))]
+		sonic.CurrentSequence = sonic.Sprite.Sequences[randomSequence]
+	} else if sprite == ring {
+		fadeSeq := ring.Sprite.Sequences["fade"]
+		if &ring.CurrentSequence[0] == &fadeSeq[0] {
+			ring.CurrentSequence = ring.Sprite.Sequences["end"]
+		}
+	}
 }
 
 func incrementVMIndex(value int) {
 	if math.Abs(float64(ring.TargetPosition.Y-ring.Position.Y)) > 1 {
 		return
 	}
-	texts[selectedVMIndex].TargetPosition.X -= 14
+	texts[selectedVMIndex].TargetPosition.X -= 18
 	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
-	texts[selectedVMIndex].TargetPosition.X += 14
+	texts[selectedVMIndex].TargetPosition.X += 18
 
 	ring.TargetPosition.Y = texts[selectedVMIndex].Position.Y - 4
-	ring.Speed = 1
+	ring.Speed = 2
 }
 
 func main() {
@@ -124,8 +155,10 @@ func main() {
 			break
 		}
 		if enter {
-			endLoop = true
-			model.SwitchToVM(centinelVM, vms[selectedVMIndex])
+			ring.CurrentSequencePosition = 0.0
+			ring.CurrentSequence = ring.Sprite.Sequences["fade"]
+			//endLoop = true
+			//model.SwitchToVM(centinelVM, vms[selectedVMIndex])
 		}
 
 		if (dx > 0 || dy > 0) && selectedVMIndex < len(vms) {

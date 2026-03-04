@@ -62,6 +62,7 @@ type SpriteInstance struct {
 	CurrentSequencePosition float32
 	SequenceLength          int
 	Scale                   float64
+	OnComplete              func(sprite *SpriteInstance)
 
 	CurrentPalleteSwapOffset   float32
 	CurrentPalleteSwapPosition float32
@@ -127,7 +128,7 @@ func (t *Text) ProcessColor(color []byte) []byte {
 func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, position Point) *SpriteInstance {
 	sequence := sprites.Sprites[name].Sequences[sequenceName]
 	relativeSeqenceSpeed := float32(0.5)
-	relativePaletteSwapSpeed := float32(0.2)
+	relativePaletteSwapSpeed := float32(0.07)
 	spriteInstance := &SpriteInstance{
 		Sprite:                     sprites.Sprites[name],
 		Position:                   position,
@@ -155,7 +156,13 @@ func (s *SpriteInstance) NextFrame() {
 	// Update Frame
 	s.CurrentSequencePosition += s.SequenceOffset
 	if s.CurrentSequencePosition >= 1 {
+		// ToDo: avoid loop if not needed
 		s.CurrentSequencePosition = 0
+
+		if s.OnComplete != nil {
+			s.OnComplete(s)
+		}
+
 	}
 
 	// Swap palettes
@@ -205,6 +212,7 @@ func UpdatePositionT(s *Text) {
 
 func (s *SpriteInstance) CurrentFrame() Rect {
 	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
+
 	return s.Sprite.Frames[s.CurrentSequence[frame]]
 }
 

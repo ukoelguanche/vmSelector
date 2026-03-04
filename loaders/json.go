@@ -8,10 +8,14 @@ import (
 	"apodeiktikos.com/fbtest/model"
 )
 
-func LoadJson(path string, sprites *model.Sprites) error {
+func LoadJson(path string, sprites *model.Sprites) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal("Error loading sprite definition %s %v", path, err)
+		log.Fatalf("Error opening file %s\n%v", path, err)
 	}
-	return json.Unmarshal(data, &sprites)
+
+	err = json.Unmarshal(data, &sprites)
+	if err != nil {
+		log.Fatalf("Error loading sprite definition: %s\n%v", path, err)
+	}
 }
