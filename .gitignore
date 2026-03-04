@@ -1,3 +1,4 @@
 fbtest
 *.tgz
 .DS_Store
+.env
