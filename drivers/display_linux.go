@@ -2,11 +2,11 @@ package drivers
 
 import (
 	"encoding/binary"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 	"syscall"
+	"unsafe"
 )
 
 type inputEvent struct {
@@ -28,6 +28,8 @@ type Display struct {
 	keyboardFile *os.File
 	pixels       []byte
 	buffer       []byte
+	LineLength   int // <--- Añade esto
+	VW, VH       int // <--- Y esto
 }
 
 func InitDisplay(vw, vh int) *Display {
@@ -37,23 +39,36 @@ func InitDisplay(vw, vh int) *Display {
 		panic(err)
 	}
 
-	size := sw * sh * 4
-	log.Printf("Screen size: %dx%d (%d)", sw, sh, size)
+	// OBTENER LINE LENGTH REAL
+	// Esto evita que la imagen se vea "hacia un lado" o "torcida"
+	var fixInfo struct {
+		id                            [16]byte
+		smem_start                    uintptr
+		smem_len                      uint32
+		type_                         uint32
+		type_aux                      uint32
+		visual                        uint32
+		xpanstep, ypanstep, ywrapstep uint16
+		line_length                   uint32 // Este es el que nos importa
+	}
+	// FBIOGET_FSCREENINFO = 0x4602
+	syscall.Syscall(syscall.SYS_IOCTL, f.Fd(), 0x4602, uintptr(unsafe.Pointer(&fixInfo)))
 
-	data, err := syscall.Mmap(int(f.Fd()), 0, size, syscall.PROT_WRITE|syscall.PROT_READ, syscall.MAP_SHARED)
+	lineLen := int(fixInfo.line_length)
+	size := lineLen * sh // Tamaño real de la memoria de video
+
+	data, _ := syscall.Mmap(int(f.Fd()), 0, size, syscall.PROT_WRITE|syscall.PROT_READ, syscall.MAP_SHARED)
 	backBuffer := make([]byte, size)
 
-	if err != nil {
-		panic("Error en Mmap: " + err.Error())
-	}
-
 	return &Display{
-		file:   f,
-		pixels: data,
-		buffer: backBuffer,
+		file:       f,
+		pixels:     data,
+		buffer:     backBuffer,
+		LineLength: lineLen,
+		VW:         vw,
+		VH:         vh,
 	}
 }
-
 func getDisplaySize() (int, int) {
 	vsBytes, err := os.ReadFile("/sys/class/graphics/fb0/virtual_size")
 	if err != nil {
@@ -68,26 +83,33 @@ func getDisplaySize() (int, int) {
 }
 
 func (d *Display) DrawPixel(vx, vy int32, c []byte) {
-	if vx < 0 || vx >= VW || vy < 0 || vy >= VH {
+	// Usamos las constantes o variables VW y VH que tengas definidas
+	if vx < 0 || vx >= int32(VW) || vy < 0 || vy >= int32(VH) {
 		return
 	}
 
-	scaleX, scaleY := sw/VW, sh/VH
+	// Proyección dinámica: calculamos el área real que ocupa el píxel virtual
+	// Esto reparte los píxeles sobrantes automáticamente
+	xStart := int(float64(vx) * float64(sw) / float64(VW))
+	xEnd := int(float64(vx+1) * float64(sw) / float64(VW))
+
+	yStart := int(float64(vy) * float64(sh) / float64(VH))
+	yEnd := int(float64(vy+1) * float64(sh) / float64(VH))
 
 	r, g, b, a := c[0], c[1], c[2], c[3]
 
-	for py := 0; py < scaleY; py++ {
-		for px := 0; px < scaleX; px++ {
-			rx, ry := int(vx)*scaleX+px, int(vy)*scaleY+py
+	// Dibujamos el bloque estirado
+	for py := yStart; py < yEnd; py++ {
+		for px := xStart; px < xEnd; px++ {
+			// Importante: No olvides que si Alpine usa LineLength,
+			// deberías usar d.LineLength en lugar de sw aquí.
+			offset := (py*sw + px) * 4
 
-			if rx >= 0 && rx < sw && ry >= 0 && ry < sh {
-				offset := (ry*sw + rx) * 4
-
-				// AQUÍ ESTÁ EL CAMBIO: Escribimos en orden B, G, R, A
-				d.buffer[offset] = b   // Azul primero
-				d.buffer[offset+1] = g // Verde igual
-				d.buffer[offset+2] = r // Rojo al final
-				d.buffer[offset+3] = a // Alpha
+			if offset+3 < len(d.buffer) {
+				d.buffer[offset] = b
+				d.buffer[offset+1] = g
+				d.buffer[offset+2] = r
+				d.buffer[offset+3] = a
 			}
 		}
 	}
