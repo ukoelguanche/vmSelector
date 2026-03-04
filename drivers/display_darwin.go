@@ -1,9 +1,16 @@
 package drivers
 
+/*
+#cgo LDFLAGS: -framework ApplicationServices
+#include <ApplicationServices/ApplicationServices.h>
+*/
+import "C"
 import (
-	"unsafe"
+	"log"
 
 	"github.com/veandco/go-sdl2/sdl"
+
+	"unsafe"
 )
 
 type Display struct {
@@ -13,12 +20,23 @@ type Display struct {
 	pixels   []byte
 }
 
-func InitDisplay(sw, sh, vw, vh int) *Display {
+func InitDisplay(vw, vh int) *Display {
+	sw, sh := getDisplaySize()
+	log.Printf("Detected resolution: %dx%d", sw, sh)
+
 	sdl.Init(sdl.INIT_EVERYTHING)
 	w, _ := sdl.CreateWindow("framebuffer", 100, 100, int32(sw), int32(sh), sdl.WINDOW_FULLSCREEN_DESKTOP)
 	r, _ := sdl.CreateRenderer(w, -1, sdl.RENDERER_ACCELERATED)
 	t, _ := r.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STREAMING, int32(vw), int32(vh))
 	return &Display{w, r, t, make([]byte, vw*vh*4)}
+}
+
+func getDisplaySize() (int, int) {
+	mainDisplay := C.CGMainDisplayID()
+	width := C.CGDisplayPixelsWide(mainDisplay)
+	height := C.CGDisplayPixelsHigh(mainDisplay)
+
+	return int(width), int(height)
 }
 
 func (d *Display) DrawPixel(x, y int32, c []byte) {
@@ -42,33 +60,34 @@ func (d *Display) Present() {
 	d.renderer.Present()
 }
 
-func (d *Display) GetInput() (int32, int32, bool, bool) {
-	var dx, dy int32
+func (d *Display) GetInput() (int, bool, bool) {
+	var dx int
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		if t, ok := event.(*sdl.KeyboardEvent); ok && t.Type == sdl.KEYDOWN {
 			switch t.Keysym.Sym {
 			case sdl.K_UP:
-				dy = -4
+				dx = -1
 			case sdl.K_DOWN:
-				dy = 4
+				dx = 1
 			case sdl.K_LEFT:
-				dx = -4
+				dx = -1
 			case sdl.K_RIGHT:
-				dx = 4
+				dx = 1
 			case sdl.K_ESCAPE:
-				return 0, 0, true, false
+				return 0, true, false
 			case sdl.K_RETURN:
-				return 0, 0, false, true
+				return 0, false, true
 			}
 		}
 		if _, ok := event.(*sdl.QuitEvent); ok {
-			return 0, 0, true, false
+			return 0, true, false
 		}
 	}
-	return dx, dy, false, false
+	return dx, false, false
 }
 
 func (d *Display) Close() {
+	d.Clear()
 	d.window.Destroy()
 	sdl.Quit()
 }

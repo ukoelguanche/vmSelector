@@ -4,12 +4,11 @@ import "apodeiktikos.com/fbtest/model"
 
 const (
 	VW, VH = 320, 200
-	SW, SH = 1280, 720
 )
 
 var GlobalDisplay *Display
 
-func DrawAnimation(sprite *model.SpriteInstance) {
+func DrawSpriteFrame(sprite *model.SpriteInstance) {
 	GlobalDisplay.DrawSpriteRect(sprite, sprite.CurrentFrame(), sprite.Position.X, sprite.Position.Y)
 }
 
@@ -48,7 +47,7 @@ func (d *Display) DrawSpriteRect(sprite model.Renderable, rect model.Rect, destX
 			if color[3] < 128 {
 				continue
 			}
-			
+
 			finalColor := sprite.ProcessColor(color)
 
 			d.DrawPixel(destX+int32(sx), destY+int32(sy), finalColor)

@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"syscall"
 )
 
@@ -19,13 +21,17 @@ const (
 	KeyDown  = 108
 )
 
+var sw, sh int
+
 type Display struct {
 	file         *os.File
 	keyboardFile *os.File
 	pixels       []byte
+	buffer       []byte
 }
 
-func InitDisplay(sw, sh, vw, vh int) *Display {
+func InitDisplay(vw, vh int) *Display {
+	sw, sh = getDisplaySize()
 	f, err := os.OpenFile("/dev/fb0", os.O_RDWR, 0)
 	if err != nil {
 		panic(err)
@@ -35,6 +41,8 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 	log.Printf("Screen size: %dx%d (%d)", sw, sh, size)
 
 	data, err := syscall.Mmap(int(f.Fd()), 0, size, syscall.PROT_WRITE|syscall.PROT_READ, syscall.MAP_SHARED)
+	backBuffer := make([]byte, size)
+
 	if err != nil {
 		panic("Error en Mmap: " + err.Error())
 	}
@@ -42,7 +50,21 @@ func InitDisplay(sw, sh, vw, vh int) *Display {
 	return &Display{
 		file:   f,
 		pixels: data,
+		buffer: backBuffer,
 	}
+}
+
+func getDisplaySize() (int, int) {
+	vsBytes, err := os.ReadFile("/sys/class/graphics/fb0/virtual_size")
+	if err != nil {
+		panic(err)
+	}
+
+	parts := strings.Split(strings.TrimSpace(string(vsBytes)), ",")
+	realWidth, _ := strconv.Atoi(parts[0])
+	realHeight, _ := strconv.Atoi(parts[1])
+
+	return realWidth, realHeight
 }
 
 func (d *Display) DrawPixel(vx, vy int32, c []byte) {
@@ -50,7 +72,7 @@ func (d *Display) DrawPixel(vx, vy int32, c []byte) {
 		return
 	}
 
-	scaleX, scaleY := SW/VW, SH/VH
+	scaleX, scaleY := sw/VW, sh/VH
 
 	r, g, b, a := c[0], c[1], c[2], c[3]
 
@@ -58,66 +80,67 @@ func (d *Display) DrawPixel(vx, vy int32, c []byte) {
 		for px := 0; px < scaleX; px++ {
 			rx, ry := int(vx)*scaleX+px, int(vy)*scaleY+py
 
-			if rx >= 0 && rx < SW && ry >= 0 && ry < SH {
-				offset := (ry*SW + rx) * 4
+			if rx >= 0 && rx < sw && ry >= 0 && ry < sh {
+				offset := (ry*sw + rx) * 4
 
 				// AQUÍ ESTÁ EL CAMBIO: Escribimos en orden B, G, R, A
-				d.pixels[offset] = b   // Azul primero
-				d.pixels[offset+1] = g // Verde igual
-				d.pixels[offset+2] = r // Rojo al final
-				d.pixels[offset+3] = a // Alpha
+				d.buffer[offset] = b   // Azul primero
+				d.buffer[offset+1] = g // Verde igual
+				d.buffer[offset+2] = r // Rojo al final
+				d.buffer[offset+3] = a // Alpha
 			}
 		}
 	}
 }
 
 func (d *Display) Clear() {
-	for i := range d.pixels {
-		d.pixels[i] = 0
+	for i := range d.buffer {
+		d.buffer[i] = 0
 	}
 }
 
 func (d *Display) Present() {
-	// ¡CON MMAP NO HACE FALTA HACER NADA AQUÍ!
-	// En cuanto escribes en d.pixels[i] = x, el píxel viaja a la pantalla.
-	// Solo si ves parpadeo, usaremos un buffer intermedio más adelante.
+	copy(d.pixels, d.buffer)
 }
 
-func (d *Display) GetInput() (int32, int32, bool, bool) {
+func (d *Display) GetInput() (int32, bool, bool) {
 	if d.keyboardFile == nil {
-		return 0, 0, false, false
+		return 0, false, false
 	}
 
-	// El tamaño de input_event en Linux 64-bit es de 24 bytes.
-	// [0-15]: Time (Segundos y Microsegundos) -> No los necesitamos ahora
-	// [16-17]: Type (EV_KEY, EV_REL, etc.)
-	// [18-19]: Code (Código de la tecla)
-	// [20-23]: Value (0: soltado, 1: presionado, 2: repetido)
 	b := make([]byte, 24)
 	n, err := d.keyboardFile.Read(b)
 
-	// Si el archivo está vacío (EAGAIN) o hay error, salimos.
 	if err != nil || n < 24 {
-		return 0, 0, false, false
+		return 0, false, false
 	}
 
 	evType := binary.LittleEndian.Uint16(b[16:18])
 	evCode := binary.LittleEndian.Uint16(b[18:20])
 	evValue := int32(binary.LittleEndian.Uint32(b[20:24]))
 
-	// EV_KEY es siempre 1 en el protocolo de entrada de Linux
 	if evType == 1 && (evValue == 1 || evValue == 2) {
 		switch evCode {
 		case 103: // Flecha ARRIBA
-			return 0, -1, true, false
+			return -1, true, false
 		case 108: // Flecha ABAJO
-			return 0, 1, true, false
+			return 1, true, false
 		case 28: // ENTER
-			return 0, 0, false, true
+			return 0, false, true
 		}
 	}
 
-	return 0, 0, false, false
+	return 0, false, false
 }
 
-func (d *Display) Close() { d.file.Close() }
+func (d *Display) Close() {
+	for i := range d.pixels {
+		d.pixels[i] = 0
+	}
+
+	syscall.Munmap(d.pixels)
+
+	if d.file != nil {
+		d.file.Close()
+	}
+}

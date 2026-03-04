@@ -4,6 +4,9 @@ import (
 	_ "image/png"
 	"math"
 	"math/rand"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
@@ -30,7 +33,7 @@ var selectedVMIndex = 0
 
 func Init() {
 	util.LoadContext()
-	drivers.GlobalDisplay = drivers.InitDisplay(drivers.SW, drivers.SH, drivers.VW, drivers.VH)
+	drivers.GlobalDisplay = drivers.InitDisplay(drivers.VW, drivers.VH)
 
 	loaders.LoadSprites("./resources/sprites/Sprites.json", &sprites)
 
@@ -68,9 +71,6 @@ func Init() {
 	for y := 0; y < 13; y++ {
 		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: hudOffset, Y: int32(y * 16)}))
 	}
-	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
-	ring.OnComplete = OnComplete
-	spriteInstances = append(spriteInstances, ring)
 
 	texts = make([]*model.Text, 0)
 
@@ -93,15 +93,19 @@ func Init() {
 	texts[0].TargetPosition.X += 12
 	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
 
+	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
+	ring.OnComplete = OnComplete
+	spriteInstances = append(spriteInstances, ring)
+
 	return
 
 }
 
-func Loop(animationIndex int, selectedVMIndex int, endLoop bool) {
+func Loop() {
 	drivers.GlobalDisplay.Clear()
 
 	for _, spriteInstance := range spriteInstances {
-		drivers.DrawAnimation(spriteInstance)
+		drivers.DrawSpriteFrame(spriteInstance)
 		spriteInstance.NextFrame()
 	}
 
@@ -125,57 +129,76 @@ func OnComplete(sprite *model.SpriteInstance) {
 		fadeSeq := ring.Sprite.Sequences["fade"]
 		if &ring.CurrentSequence[0] == &fadeSeq[0] {
 			ring.CurrentSequence = ring.Sprite.Sequences["end"]
+			model.SwitchToVM(centinelVM, vms[selectedVMIndex])
 		}
+
 	}
 }
 
 func incrementVMIndex(value int) {
+	if selectedVMIndex >= len(vms) || selectedVMIndex < 0 {
+		return
+	}
+
 	if math.Abs(float64(ring.TargetPosition.Y-ring.Position.Y)) > 1 {
 		return
 	}
-	texts[selectedVMIndex].TargetPosition.X -= 18
+	texts[selectedVMIndex].TargetPosition.X -= 12
 	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
-	texts[selectedVMIndex].TargetPosition.X += 18
+	texts[selectedVMIndex].TargetPosition.X += 12
 
 	ring.TargetPosition.Y = texts[selectedVMIndex].Position.Y - 4
 	ring.Speed = 2
 }
 
+func handleKeyboardInput() bool {
+	dx, quit, enter := drivers.GlobalDisplay.GetInput()
+
+	if quit {
+		return true
+	}
+
+	if enter {
+		ring.CurrentSequencePosition = 0.0
+		ring.CurrentSequence = ring.Sprite.Sequences["fade"]
+	}
+
+	incrementVMIndex(int(dx))
+
+	return false
+}
+
+func waitForExit(cleanup func()) {
+	sigChan := make(chan os.Signal, 1)
+
+	signal.Notify(sigChan,
+		os.Interrupt,    // Ctrl+C
+		syscall.SIGTERM, // kill
+	)
+
+	<-sigChan
+	cleanup()
+	os.Exit(0)
+}
+
 func main() {
 	Init()
 
-	defer drivers.GlobalDisplay.Close()
-	var animationIndex = 0
-
-	var endLoop = false
+	go waitForExit(func() {
+		drivers.GlobalDisplay.Close()
+		drivers.GlobalDisplay.Clear()
+	})
 
 	for {
-		dx, dy, quit, enter := drivers.GlobalDisplay.GetInput()
-		if quit {
-			break
-		}
-		if enter {
-			ring.CurrentSequencePosition = 0.0
-			ring.CurrentSequence = ring.Sprite.Sequences["fade"]
-			//endLoop = true
-			//model.SwitchToVM(centinelVM, vms[selectedVMIndex])
-		}
-
-		if (dx > 0 || dy > 0) && selectedVMIndex < len(vms) {
-			incrementVMIndex(1)
-		}
-		if (dx < 0 || dy < 0) && selectedVMIndex > 0 {
-			incrementVMIndex(-1)
-		}
-
 		start := time.Now()
 
-		Loop(animationIndex, selectedVMIndex, endLoop)
+		if handleKeyboardInput() {
+			break
+		}
 
-		animationIndex += 1
+		Loop()
 
 		elapsed := time.Since(start)
-
 		if elapsed < frameDelay {
 			time.Sleep(frameDelay - elapsed)
 		}
