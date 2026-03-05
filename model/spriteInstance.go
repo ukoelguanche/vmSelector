@@ -1,11 +1,12 @@
 package model
 
-import "math"
+import (
+	"math"
+	"time"
+)
 
 type SpriteInstance struct {
-	Sprite         *Sprite
-	Position       Point
-	TargetPosition Point
+	Sprite *Sprite
 
 	FrameIdx                int
 	CurrentSequence         []int
@@ -13,10 +14,12 @@ type SpriteInstance struct {
 	CurrentSequencePosition float32
 	SequenceLength          int
 	Scale                   float64
-	moving                  bool
+	Moving                  bool
 	OnAnimationComplete     func(*SpriteInstance)
 	OnMovementComplete      func(*SpriteInstance)
 	totalDistance           float64
+	movementFrameCount      float64
+	movementFrame           float64
 	easeFunc                func(float64) float64
 
 	CurrentPalleteSwapOffset   float32
@@ -24,6 +27,14 @@ type SpriteInstance struct {
 
 	PaletteSwapIndex int
 	Speed            Size
+	AbsSpeed         float64
+
+	Position       Point
+	StartPosition  Point
+	TargetPosition Point
+	StartTime      time.Time
+	Duration       time.Duration
+	TotalDistance  float64
 }
 
 func (si *SpriteInstance) GetSprite() *Sprite {
@@ -32,28 +43,56 @@ func (si *SpriteInstance) GetSprite() *Sprite {
 func (si *SpriteInstance) GetBitmap() *Bitmap {
 	return si.Sprite.Bitmap
 }
+func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
+func (si *SpriteInstance) GetStartTime() time.Time                 { return si.StartTime }
+func (si *SpriteInstance) GetDuration() time.Duration              { return si.Duration }
+func (si *SpriteInstance) GetStartPosition() Point                 { return si.StartPosition }
+func (si *SpriteInstance) MoveTo(target Point, duration time.Duration) {
+	si.StartPosition = si.Position
+	si.TargetPosition = target
+	si.StartTime = time.Now()
+	si.Duration = duration
+	si.Moving = true
+}
+
+func (si *SpriteInstance) GetEaseFunction() func(float64) float64 { return si.easeFunc }
+func (si *SpriteInstance) GetMovementFrameCount() float64         { return si.movementFrameCount }
+func (si *SpriteInstance) GetMovementFrame() float64              { return si.movementFrame }
+func (si *SpriteInstance) GetTotalDistance() float64              { return si.totalDistance }
+func (si *SpriteInstance) GetPosition() Point                     { return si.Position }
+func (si *SpriteInstance) GetTargetPosition() Point               { return si.TargetPosition }
+func (si *SpriteInstance) GetSpeed() Size                         { return si.Speed }
+func (si *SpriteInstance) IsMoving() bool                         { return si.Moving }
+
 func (si *SpriteInstance) SetPosition(position Point) {
 	si.Position = position
 }
-func (si *SpriteInstance) SetTargetPosition(targetPosition Point, speed Size) {
+func (si *SpriteInstance) SetTargetPosition(targetPosition Point) {
+
 	si.TargetPosition = targetPosition
-	si.Speed = speed
-	si.moving = true
+
+	si.Moving = true
 	si.totalDistance = math.Sqrt(math.Pow(targetPosition.X-si.Position.X, 2) + math.Pow(targetPosition.Y-si.Position.Y, 2))
 	return
 }
-func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
-func (si *SpriteInstance) GetEaseFunction() func(float64) float64  { return si.easeFunc }
-func (si *SpriteInstance) GetTotalDistance() float64               { return si.totalDistance }
-func (si *SpriteInstance) GetPosition() Point                      { return si.Position }
-func (si *SpriteInstance) GetTargetPosition() Point                { return si.TargetPosition }
-func (si *SpriteInstance) GetSpeed() Size                          { return si.Speed }
-func (si *SpriteInstance) IsMoving() bool                          { return si.moving }
+
+func (si *SpriteInstance) SetSpeed(absSpeed float64) {
+	dx := si.TargetPosition.X - si.Position.X
+	dy := si.TargetPosition.Y - si.Position.Y
+	angle := math.Atan2(dy, dx)
+
+	si.movementFrameCount = si.totalDistance / absSpeed
+	si.movementFrame = 0
+
+	si.AbsSpeed = absSpeed
+	si.Speed = Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
+}
+
 func (si *SpriteInstance) EndMovement() {
-	if !si.moving {
+	if !si.Moving {
 		return
 	}
-	si.moving = false
+	si.Moving = false
 	if si.OnMovementComplete != nil {
 		si.OnMovementComplete(si)
 	}
@@ -120,7 +159,7 @@ func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, posi
 		SequenceLength:             len(sequence),
 		CurrentPalleteSwapOffset:   1 / float32(len(sequence)) * relativePaletteSwapSpeed,
 		CurrentPalleteSwapPosition: 0.0,
-		moving:                     false,
+		Moving:                     false,
 	}
 
 	return spriteInstance

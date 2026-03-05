@@ -1,9 +1,6 @@
 package model
 
-import (
-	"log"
-	"math"
-)
+import "time"
 
 type Renderable interface {
 	GetBitmap() *Bitmap
@@ -14,52 +11,57 @@ type Renderable interface {
 	GetTargetPosition() Point
 	GetSpeed() Size
 	SetPosition(Point)
+	GetMovementFrameCount() float64
+	GetMovementFrame() float64
 	EndMovement()
 	IsMoving() bool
-	SetTargetPosition(Point, Size)
+	SetTargetPosition(Point)
+	SetSpeed(float64)
 	GetTotalDistance() float64
 	SetEaseFunction(func(float64) float64)
 	GetEaseFunction() func(float64) float64
+
+	GetStartPosition() Point
+	GetStartTime() time.Time
+	GetDuration() time.Duration
 }
 
 func UpdatePosition(r Renderable) {
 	if !r.IsMoving() {
 		return
 	}
-	currentPosition := r.GetPosition()
-	targetPosition := r.GetTargetPosition()
-	nextPosition := currentPosition
 
-	speed := r.GetSpeed()
-	currentDistance := 1 - math.Sqrt(math.Pow(currentPosition.X-targetPosition.X, 2)+math.Pow(currentPosition.Y-targetPosition.Y, 2))/r.GetTotalDistance()
-	easeFunc := r.GetEaseFunction()
-	var eased float64 = currentDistance
-	if easeFunc != nil {
-		eased = easeFunc(currentDistance)
+	// 1. Calculamos el progreso temporal (t) de 0.0 a 1.0
+	// Esto NUNCA se queda en cero porque el tiempo siempre pasa.
+	elapsed := time.Since(r.GetStartTime())
+	duration := r.GetDuration()
+
+	t := elapsed.Seconds() / duration.Seconds()
+	if t > 1.0 {
+		t = 1.0
 	}
 
-	log.Printf("Distance: %f %f", currentDistance, eased)
-
-	dx := targetPosition.X - currentPosition.X
-	dy := targetPosition.Y - currentPosition.Y
-
-	if dx > 0 {
-		nextPosition.X += speed.W
-	} else if dx < 0 {
-		nextPosition.X -= speed.W
+	// 2. Pasamos ese 't' por la función de Ease
+	// Aquí es donde sucede la magia: t avanza lineal,
+	// pero easedT avanza con curvas (lento-rápido-lento)
+	easedT := t
+	if easeFunc := r.GetEaseFunction(); easeFunc != nil {
+		easedT = easeFunc(t)
 	}
 
-	if dy > 0 {
-		nextPosition.Y += speed.H
-	} else if dy < 0 {
-		nextPosition.Y -= speed.H
-	}
+	// 3. Interpolación Lineal (LERP) usando el easedT
+	start := r.GetStartPosition()
+	target := r.GetTargetPosition()
 
-	if currentPosition.Equals(nextPosition) || (math.Abs(float64(dx)) < float64(speed.W) && math.Abs(float64(dy)) < float64(speed.H)) {
-		r.SetPosition(targetPosition)
+	// Fórmula: inicio + (destino - inicio) * progreso_suave
+	nextX := start.X + (target.X-start.X)*easedT
+	nextY := start.Y + (target.Y-start.Y)*easedT
+
+	r.SetPosition(Point{X: nextX, Y: nextY})
+
+	// 4. Condición de parada: Si el tiempo se agotó
+	if t >= 1.0 {
+		r.SetPosition(target) // Aseguramos el píxel perfecto al final
 		r.EndMovement()
-	} else {
-		r.SetPosition(nextPosition)
 	}
-
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	_ "image/png"
-	"log"
 	"math"
 	"math/rand"
 	"time"
@@ -73,6 +72,7 @@ func SetupHud() {
 	SetupHUDTexts(hudOffset)
 
 	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
+	ring.SetEaseFunction(util.EaseInOutCubic)
 	ring.OnAnimationComplete = OnAnimationComplete
 }
 
@@ -99,11 +99,6 @@ func SetupHUDTexts(hudOffset float64) {
 }
 
 func SetupGreenHillBackground() {
-	layer3 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer3", "idle", model.Point{X: 0, Y: 48})
-	layer3.SetTargetPosition(layer3.Position.SetX(-980), model.Size{W: 1, H: 0})
-	layer3.OnMovementComplete = OnMovementComplete
-	spriteInstances = append(spriteInstances, layer3)
-
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer4", "idle", model.Point{X: 0, Y: 64}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", model.Point{X: 0, Y: 112}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", model.Point{X: 0, Y: 152}))
@@ -115,9 +110,9 @@ func SetupClouds() {
 	var y float64 = 0
 	for i := 0; i < 3; i++ {
 		cloudSprite = model.BuildSpriteInstance(sprites, fmt.Sprintf("GreenHillBackgroundLayer%d", i+1), "idle", model.Point{X: 0, Y: float64(y)})
-		speed := 2 - float64(i)*0.5
-		log.Printf("Speed %f", speed)
-		cloudSprite.SetTargetPosition(cloudSprite.Position.SetX(-980), model.Size{W: speed, H: 0})
+
+		cloudSprite.MoveTo(cloudSprite.Position.SetX(-980), time.Duration(90000+i*10000)*time.Millisecond)
+
 		cloudSprite.OnMovementComplete = OnMovementComplete
 		spriteInstances = append(spriteInstances, cloudSprite)
 		y += cloudSprite.Sprite.Frames[0].Size.H
@@ -165,7 +160,7 @@ func OnAnimationComplete(sprite *model.SpriteInstance) {
 func OnMovementComplete(sprite *model.SpriteInstance) {
 	if sprite == clouds[0] || sprite == clouds[1] || sprite == clouds[2] {
 		sprite.Position = sprite.Position.SetX(0)
-		sprite.SetTargetPosition(sprite.Position.SetX(-980), sprite.Speed)
+		sprite.SetTargetPosition(sprite.Position.SetX(-980))
 	}
 }
 
@@ -173,23 +168,19 @@ func incrementVMIndex(value int) {
 	if value == 0 || selectedVMIndex >= len(vms) || selectedVMIndex < 0 {
 		return
 	}
-
 	if math.Abs(float64(ring.TargetPosition.Y-ring.Position.Y)) > 1 {
 		return
 	}
-
 	if ring.IsMoving() {
 		return
 	}
 
-	texts[selectedVMIndex].SetTargetPosition(texts[selectedVMIndex].Position.SetX(hudOffset+30), model.Size{W: 1})
+	const transitionDuaration = 200 * time.Millisecond
+	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+30), transitionDuaration)
 	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
-	texts[selectedVMIndex].SetTargetPosition(texts[selectedVMIndex].Position.SetX(hudOffset+42), model.Size{W: 1})
+	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+42), transitionDuaration)
 
-	speed := ring.Speed.SetH(2)
-	targetPosition := ring.Position.SetY(texts[selectedVMIndex].Position.Y - 4)
-	ring.SetTargetPosition(targetPosition, speed)
-	ring.SetEaseFunction(util.EaseInOutCubic)
+	ring.MoveTo(ring.Position.SetY(texts[selectedVMIndex].Position.Y-4), transitionDuaration)
 }
 
 func handleKeyboardInput() bool {
