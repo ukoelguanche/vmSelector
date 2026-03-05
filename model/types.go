@@ -1,22 +1,22 @@
 package model
 
 type Point struct {
-	X, Y int32
+	X, Y float64
 }
 
 func (p1 Point) Equals(p2 Point) bool { return p1.X == p2.X && p1.Y == p2.Y }
-func (p Point) SetX(x int32) Point    { return Point{X: x, Y: p.Y} }
-func (p Point) SetY(y int32) Point    { return Point{X: p.X, Y: y} }
+func (p Point) SetX(x float64) Point  { return Point{X: x, Y: p.Y} }
+func (p Point) SetY(y float64) Point  { return Point{X: p.X, Y: y} }
 
-func (p Point) IncX(x int32) Point { return Point{X: p.X + x, Y: p.Y} }
-func (p Point) IncY(y int32) Point { return Point{X: p.X, Y: p.Y + y} }
+func (p Point) IncX(x float64) Point { return Point{X: p.X + x, Y: p.Y} }
+func (p Point) IncY(y float64) Point { return Point{X: p.X, Y: p.Y + y} }
 
 type Size struct {
-	W, H int32
+	W, H float64
 }
 
-func (s Size) SetW(w int32) Size { return Size{W: w, H: s.H} }
-func (s Size) SetH(h int32) Size { return Size{W: s.W, H: h} }
+func (s Size) SetW(w float64) Size { return Size{W: w, H: s.H} }
+func (s Size) SetH(h float64) Size { return Size{W: s.W, H: h} }
 
 type Rect struct {
 	Point Point
@@ -70,7 +70,8 @@ func ReplacePalette(color []byte, sourcePalette *Palette, targetPalette *Palette
 
 type Bitmap struct {
 	Name   string
-	Size   Size
+	W      int32
+	H      int32
 	Pixels []byte
 }
 

@@ -1,5 +1,7 @@
 package model
 
+import "math"
+
 type SpriteInstance struct {
 	Sprite         *Sprite
 	Position       Point
@@ -12,8 +14,10 @@ type SpriteInstance struct {
 	SequenceLength          int
 	Scale                   float64
 	moving                  bool
-	OnAnimationComplete     func(sprite *SpriteInstance)
-	OnMovementComplete      func(sprite *SpriteInstance)
+	OnAnimationComplete     func(*SpriteInstance)
+	OnMovementComplete      func(*SpriteInstance)
+	totalDistance           float64
+	easeFunc                func(float64) float64
 
 	CurrentPalleteSwapOffset   float32
 	CurrentPalleteSwapPosition float32
@@ -31,15 +35,20 @@ func (si *SpriteInstance) GetBitmap() *Bitmap {
 func (si *SpriteInstance) SetPosition(position Point) {
 	si.Position = position
 }
-func (si *SpriteInstance) SetTargetPosition(position Point, speed Size) {
-	si.TargetPosition = position
+func (si *SpriteInstance) SetTargetPosition(targetPosition Point, speed Size) {
+	si.TargetPosition = targetPosition
 	si.Speed = speed
 	si.moving = true
+	si.totalDistance = math.Sqrt(math.Pow(targetPosition.X-si.Position.X, 2) + math.Pow(targetPosition.Y-si.Position.Y, 2))
+	return
 }
-func (si *SpriteInstance) GetPosition() Point       { return si.Position }
-func (si *SpriteInstance) GetTargetPosition() Point { return si.TargetPosition }
-func (si *SpriteInstance) GetSpeed() Size           { return si.Speed }
-func (si *SpriteInstance) IsMoving() bool           { return si.moving }
+func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
+func (si *SpriteInstance) GetEaseFunction() func(float64) float64  { return si.easeFunc }
+func (si *SpriteInstance) GetTotalDistance() float64               { return si.totalDistance }
+func (si *SpriteInstance) GetPosition() Point                      { return si.Position }
+func (si *SpriteInstance) GetTargetPosition() Point                { return si.TargetPosition }
+func (si *SpriteInstance) GetSpeed() Size                          { return si.Speed }
+func (si *SpriteInstance) IsMoving() bool                          { return si.moving }
 func (si *SpriteInstance) EndMovement() {
 	if !si.moving {
 		return

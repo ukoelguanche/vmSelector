@@ -1,6 +1,9 @@
 package model
 
-import "math"
+import (
+	"log"
+	"math"
+)
 
 type Renderable interface {
 	GetBitmap() *Bitmap
@@ -14,6 +17,9 @@ type Renderable interface {
 	EndMovement()
 	IsMoving() bool
 	SetTargetPosition(Point, Size)
+	GetTotalDistance() float64
+	SetEaseFunction(func(float64) float64)
+	GetEaseFunction() func(float64) float64
 }
 
 func UpdatePosition(r Renderable) {
@@ -25,6 +31,14 @@ func UpdatePosition(r Renderable) {
 	nextPosition := currentPosition
 
 	speed := r.GetSpeed()
+	currentDistance := 1 - math.Sqrt(math.Pow(currentPosition.X-targetPosition.X, 2)+math.Pow(currentPosition.Y-targetPosition.Y, 2))/r.GetTotalDistance()
+	easeFunc := r.GetEaseFunction()
+	var eased float64 = currentDistance
+	if easeFunc != nil {
+		eased = easeFunc(currentDistance)
+	}
+
+	log.Printf("Distance: %f %f", currentDistance, eased)
 
 	dx := targetPosition.X - currentPosition.X
 	dy := targetPosition.Y - currentPosition.Y

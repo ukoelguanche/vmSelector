@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	_ "image/png"
+	"log"
 	"math"
 	"math/rand"
 	"time"
@@ -30,7 +31,7 @@ var texts []*model.Text
 
 var selectedVMIndex = 0
 
-const hudOffset int32 = 175
+const hudOffset float64 = 175
 
 func Init() {
 	util.LoadContext()
@@ -65,9 +66,8 @@ func SetupGreenHillForeground() {
 }
 
 func SetupHud() {
-
 	for y := 0; y < 13; y++ {
-		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: hudOffset, Y: int32(y * 16)}))
+		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: hudOffset, Y: float64(y * 16)}))
 	}
 
 	SetupHUDTexts(hudOffset)
@@ -76,7 +76,7 @@ func SetupHud() {
 	ring.OnAnimationComplete = OnAnimationComplete
 }
 
-func SetupHUDTexts(hudOffset int32) {
+func SetupHUDTexts(hudOffset float64) {
 	texts = make([]*model.Text, 0)
 	gpuString = util.ContextStorage.GpuString
 	centinelVM = model.GetVMByName(util.ContextStorage.CentineVMName)
@@ -89,7 +89,7 @@ func SetupHUDTexts(hudOffset int32) {
 			text = vm.Name
 		}
 
-		textInstance := model.BuildTextInstance(sprites.Sprites["BoldLetters"], text, model.Point{X: hudOffset + 30, Y: int32(i)*16 + 60})
+		textInstance := model.BuildTextInstance(sprites.Sprites["BoldLetters"], text, model.Point{X: hudOffset + 30, Y: float64(i)*16 + 60})
 		texts = append(texts, textInstance)
 	}
 
@@ -112,10 +112,12 @@ func SetupGreenHillBackground() {
 func SetupClouds() {
 	var cloudSprite *model.SpriteInstance
 	clouds = make([]*model.SpriteInstance, 0)
-	var y int32 = 0
+	var y float64 = 0
 	for i := 0; i < 3; i++ {
-		cloudSprite = model.BuildSpriteInstance(sprites, fmt.Sprintf("GreenHillBackgroundLayer%d", i+1), "idle", model.Point{X: 0, Y: y})
-		cloudSprite.SetTargetPosition(cloudSprite.Position.SetX(-980), model.Size{W: 7 - int32(i)*2, H: 0})
+		cloudSprite = model.BuildSpriteInstance(sprites, fmt.Sprintf("GreenHillBackgroundLayer%d", i+1), "idle", model.Point{X: 0, Y: float64(y)})
+		speed := 2 - float64(i)*0.5
+		log.Printf("Speed %f", speed)
+		cloudSprite.SetTargetPosition(cloudSprite.Position.SetX(-980), model.Size{W: speed, H: 0})
 		cloudSprite.OnMovementComplete = OnMovementComplete
 		spriteInstances = append(spriteInstances, cloudSprite)
 		y += cloudSprite.Sprite.Frames[0].Size.H
@@ -187,6 +189,7 @@ func incrementVMIndex(value int) {
 	speed := ring.Speed.SetH(2)
 	targetPosition := ring.Position.SetY(texts[selectedVMIndex].Position.Y - 4)
 	ring.SetTargetPosition(targetPosition, speed)
+	ring.SetEaseFunction(util.EaseInOutCubic)
 }
 
 func handleKeyboardInput() bool {
