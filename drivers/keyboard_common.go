@@ -1,5 +1,7 @@
 package drivers
 
+var GlobalKeyboard *Keyboard
+
 type KeyboardInput int
 
 const (

@@ -1,8 +1,17 @@
 package drivers
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"github.com/veandco/go-sdl2/sdl"
+)
 
-func (d *Display) GetInput() KeyboardInput {
+type Keyboard struct {
+}
+
+func InitKeyboard() *Keyboard {
+	return &Keyboard{}
+}
+
+func (k *Keyboard) GetInput() KeyboardInput {
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		if t, ok := event.(*sdl.KeyboardEvent); ok && t.Type == sdl.KEYDOWN {
 			switch t.Keysym.Sym {

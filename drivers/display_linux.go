@@ -1,7 +1,6 @@
 package drivers
 
 import (
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -27,12 +26,11 @@ var sw, sh int
 var oldState *term.State
 
 type Display struct {
-	file         *os.File
-	keyboardFile *os.File
-	pixels       []byte
-	buffer       []byte
-	LineLength   int // <--- Añade esto
-	VW, VH       int // <--- Y esto
+	file       *os.File
+	pixels     []byte
+	buffer     []byte
+	LineLength int // <--- Añade esto
+	VW, VH     int // <--- Y esto
 }
 
 func InitDisplay(vw, vh int) *Display {
@@ -63,13 +61,6 @@ func InitDisplay(vw, vh int) *Display {
 	data, _ := syscall.Mmap(int(f.Fd()), 0, size, syscall.PROT_WRITE|syscall.PROT_READ, syscall.MAP_SHARED)
 	backBuffer := make([]byte, size)
 
-	kbdPath := findKeyboardDevice()
-	log.Printf("Keyboard file is: %s", kbdPath)
-	keyboardFile, err := os.OpenFile(kbdPath, os.O_RDONLY|syscall.O_NONBLOCK, 0)
-	if err != nil {
-		log.Fatalf("Failed to open keyboard file: %s", err)
-	}
-
 	fd := int(os.Stdin.Fd())
 
 	oldState, err = term.MakeRaw(fd)
@@ -78,13 +69,12 @@ func InitDisplay(vw, vh int) *Display {
 	}
 
 	return &Display{
-		file:         f,
-		pixels:       data,
-		buffer:       backBuffer,
-		LineLength:   lineLen,
-		VW:           vw,
-		VH:           vh,
-		keyboardFile: keyboardFile,
+		file:       f,
+		pixels:     data,
+		buffer:     backBuffer,
+		LineLength: lineLen,
+		VW:         vw,
+		VH:         vh,
 	}
 }
 func getDisplaySize() (int, int) {

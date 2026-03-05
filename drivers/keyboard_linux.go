@@ -8,13 +8,28 @@ import (
 	"syscall"
 )
 
-func (d *Display) GetInput() KeyboardInput {
-	if d.keyboardFile == nil {
+type Keyboard struct {
+	keyboardFile *os.File
+}
+
+func InitKeyboard() *Keyboard {
+	kbdPath := findKeyboardDevice()
+	keyboardFile, err := os.OpenFile(kbdPath, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		log.Fatalf("Failed to open keyboard file: %s", err)
+	}
+	log.Printf("Keyboard file is: %s", kbdPath)
+
+	return &Keyboard{keyboardFile: keyboardFile}
+}
+
+func (k *Keyboard) GetInput() KeyboardInput {
+	if k.keyboardFile == nil {
 		return KBD_NONE
 	}
 
 	buffer := make([]byte, 256)
-	n, err := syscall.Read(int(d.keyboardFile.Fd()), buffer)
+	n, err := syscall.Read(int(k.keyboardFile.Fd()), buffer)
 
 	if err != nil || n < 24 {
 		return KBD_NONE
@@ -59,30 +74,48 @@ func (d *Display) GetInput() KeyboardInput {
 func findKeyboardDevice() string {
 	data, err := os.ReadFile("/proc/bus/input/devices")
 	if err != nil {
-		log.Printf("error reading /proc/bus/input/devices: %v", err)
-		return "/dev/input/event2" // Tu sospechoso principal
+		log.Printf("error reading /proc/bus/input/devices: %v. Keyboard not found", err)
+		return ""
 	}
 
 	sections := strings.Split(string(data), "\n\n")
+	var keyboardSection string
+
 	for _, section := range sections {
-		// 1. Que tenga el nombre de tu teclado
-		// 2. Y que en Handlers aparezca "kbd" (esto descarta los que son solo ratón o control)
-		if strings.Contains(section, "Gaming KB") && strings.Contains(section, "kbd") {
-			lines := strings.Split(section, "\n")
-			for _, line := range lines {
-				if strings.Contains(line, "Handlers=") {
-					// Buscamos el eventX que esté en esta línea
-					parts := strings.Fields(line)
-					for _, p := range parts {
-						if strings.HasPrefix(p, "event") {
-							log.Printf("Returning /dev/input/%s", p)
-							return "/dev/input/" + p
-						}
-					}
-				}
+		if isKeyboardSection(section) {
+			keyboardSection = section
+			break
+		}
+	}
+
+	lines := strings.Split(keyboardSection, "\n")
+	for _, line := range lines {
+		if !strings.Contains(line, "Handlers=") {
+			continue
+		}
+		parts := strings.Fields(line)
+		for _, event := range parts {
+			if strings.HasPrefix(event, "event") {
+				return "/dev/input/" + event
 			}
 		}
 	}
-	log.Printf("fallback to /dev/input/event2")
-	return "/dev/input/event2"
+
+	return ""
+}
+
+func isKeyboardSection(section string) bool {
+	if !strings.Contains(section, "H: Handlers=sysrq kbd event") {
+		return false
+	}
+
+	if !(strings.Contains(section, "B: EV=120013") || strings.Contains(section, "B: EV=120011")) {
+		return false
+	}
+
+	if !strings.Contains(section, "P: Phys=usb-") {
+		return false
+	}
+
+	return true
 }

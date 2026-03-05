@@ -38,6 +38,7 @@ const hudOffset int32 = 175
 func Init() {
 	util.LoadContext()
 	drivers.GlobalDisplay = drivers.InitDisplay(drivers.VW, drivers.VH)
+	drivers.GlobalKeyboard = drivers.InitKeyboard()
 
 	loaders.LoadSprites("./resources/sprites/Sprites.json", &sprites)
 
@@ -192,7 +193,7 @@ func incrementVMIndex(value int) {
 }
 
 func handleKeyboardInput() bool {
-	kbd := drivers.GlobalDisplay.GetInput()
+	kbd := drivers.GlobalKeyboard.GetInput()
 
 	if kbd == drivers.KBD_ESCAPE {
 		return true
