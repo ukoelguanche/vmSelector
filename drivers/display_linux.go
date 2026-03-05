@@ -1,7 +1,6 @@
 package drivers
 
 import (
-	"encoding/binary"
 	"log"
 	"os"
 	"strconv"
@@ -142,86 +141,6 @@ func (d *Display) Clear() {
 
 func (d *Display) Present() {
 	copy(d.pixels, d.buffer)
-}
-
-func (d *Display) GetInput() (int, bool, bool) {
-	if d.keyboardFile == nil {
-		return 0, false, false
-	}
-
-	buffer := make([]byte, 256)
-	n, err := syscall.Read(int(d.keyboardFile.Fd()), buffer)
-
-	// Si no hay datos, devolvemos todo en falso/cero inmediatamente
-	if err != nil || n < 24 {
-		return 0, false, false
-	}
-
-	var lastCode uint16
-	var isQuit, isEnter bool
-	foundKey := false
-
-	// Recorremos los eventos que han llegado
-	for i := 0; i+24 <= n; i += 24 {
-		chunk := buffer[i : i+24]
-
-		typ := binary.LittleEndian.Uint16(chunk[16:18])
-		code := binary.LittleEndian.Uint16(chunk[18:20])
-		val := binary.LittleEndian.Uint32(chunk[20:24])
-
-		if typ == 1 { // EV_KEY
-			if val == 1 || val == 2 { // Pulsado o mantenido
-				lastCode = code
-				foundKey = true
-				if code == 1 {
-					isQuit = true
-				}
-				if code == 28 {
-					isEnter = true
-				}
-			} else if val == 0 {
-				// Si quieres que Sonic se pare al soltar la tecla:
-				// foundKey = false
-			}
-		}
-	}
-
-	if foundKey {
-		return int(lastCode), isQuit, isEnter
-	}
-
-	return 0, false, false
-}
-
-func findKeyboardDevice() string {
-	data, err := os.ReadFile("/proc/bus/input/devices")
-	if err != nil {
-		log.Printf("error reading /proc/bus/input/devices: %v", err)
-		return "/dev/input/event2" // Tu sospechoso principal
-	}
-
-	sections := strings.Split(string(data), "\n\n")
-	for _, section := range sections {
-		// 1. Que tenga el nombre de tu teclado
-		// 2. Y que en Handlers aparezca "kbd" (esto descarta los que son solo ratón o control)
-		if strings.Contains(section, "Gaming KB") && strings.Contains(section, "kbd") {
-			lines := strings.Split(section, "\n")
-			for _, line := range lines {
-				if strings.Contains(line, "Handlers=") {
-					// Buscamos el eventX que esté en esta línea
-					parts := strings.Fields(line)
-					for _, p := range parts {
-						if strings.HasPrefix(p, "event") {
-							log.Printf("Returning /dev/input/%s", p)
-							return "/dev/input/" + p
-						}
-					}
-				}
-			}
-		}
-	}
-	log.Printf("fallback to /dev/input/event2")
-	return "/dev/input/event2"
 }
 
 func (d *Display) Close() {

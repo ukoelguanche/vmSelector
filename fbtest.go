@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	_ "image/png"
-	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -193,21 +192,25 @@ func incrementVMIndex(value int) {
 }
 
 func handleKeyboardInput() bool {
-	dx, quit, enter := drivers.GlobalDisplay.GetInput()
+	kbd := drivers.GlobalDisplay.GetInput()
 
-	if quit {
+	if kbd == drivers.KBD_ESCAPE {
 		return true
 	}
 
-	if enter {
+	if kbd == drivers.KBD_RETURN {
 		ring.CurrentSequencePosition = 0.0
 		ring.CurrentSequence = ring.Sprite.Sequences["fade"]
 	}
 
-	if dx != 0 {
-		log.Printf("pulsando %d", dx)
-		incrementVMIndex(int(dx))
+	var inc int
+	if kbd == drivers.KBD_UP || kbd == drivers.KBD_LEFT {
+		inc = -1
+	} else if kbd == drivers.KBD_DOWN || kbd == drivers.KBD_RIGHT {
+		inc = 1
 	}
+
+	incrementVMIndex(inc)
 
 	return false
 }

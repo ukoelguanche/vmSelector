@@ -60,32 +60,6 @@ func (d *Display) Present() {
 	d.renderer.Present()
 }
 
-func (d *Display) GetInput() (int, bool, bool) {
-	var dx int
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		if t, ok := event.(*sdl.KeyboardEvent); ok && t.Type == sdl.KEYDOWN {
-			switch t.Keysym.Sym {
-			case sdl.K_UP:
-				dx = -1
-			case sdl.K_DOWN:
-				dx = 1
-			case sdl.K_LEFT:
-				dx = -1
-			case sdl.K_RIGHT:
-				dx = 1
-			case sdl.K_ESCAPE:
-				return 0, true, false
-			case sdl.K_RETURN:
-				return 0, false, true
-			}
-		}
-		if _, ok := event.(*sdl.QuitEvent); ok {
-			return 0, true, false
-		}
-	}
-	return dx, false, false
-}
-
 func (d *Display) Close() {
 	d.Clear()
 	d.window.Destroy()
