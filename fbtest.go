@@ -81,6 +81,7 @@ func SetupHUDTexts(hudOffset float64) {
 	gpuString = util.ContextStorage.GpuString
 	centinelVM = model.GetVMByName(util.ContextStorage.CentineVMName)
 	vms = model.GetVMsWithGPU(gpuString, centinelVM)
+	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
 	for i, vm := range vms {
 		var text string
 		if vm.Equals(centinelVM) {
@@ -95,7 +96,6 @@ func SetupHUDTexts(hudOffset float64) {
 
 	texts[0].Position.X += 12
 	texts[len(texts)-1].Position.Y += 12
-	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
 }
 
 func SetupGreenHillBackground() {
@@ -192,7 +192,13 @@ func handleKeyboardInput() bool {
 
 	if kbd == drivers.KBD_RETURN {
 		ring.CurrentSequencePosition = 0.0
-		ring.CurrentSequence = ring.Sprite.Sequences["fade"]
+		for i, text := range texts {
+			if i == selectedVMIndex || i == 0 {
+				continue
+			}
+			text.SetEaseFunction(util.EaseInOutCubic)
+			text.MoveTo(model.Point{X: 350, Y: text.Position.Y}, time.Duration((i+1)*300)*time.Millisecond)
+		}
 	}
 
 	var inc int
