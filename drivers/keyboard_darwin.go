@@ -26,7 +26,7 @@ func (k *Keyboard) GetInput() KeyboardInput {
 			case sdl.K_ESCAPE:
 				return KBD_ESCAPE
 			case sdl.K_RETURN:
-				return KBD_ESCAPE
+				return KBD_RETURN
 			}
 		}
 		if _, ok := event.(*sdl.QuitEvent); ok {
