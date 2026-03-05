@@ -108,11 +108,9 @@ func isKeyboardSection(section string) bool {
 	if !strings.Contains(section, "H: Handlers=sysrq kbd event") {
 		return false
 	}
-
 	if !(strings.Contains(section, "B: EV=120013") || strings.Contains(section, "B: EV=120011")) {
 		return false
 	}
-
 	if !strings.Contains(section, "P: Phys=usb-") {
 		return false
 	}

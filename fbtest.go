@@ -5,9 +5,6 @@ import (
 	_ "image/png"
 	"math"
 	"math/rand"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
@@ -216,26 +213,12 @@ func handleKeyboardInput() bool {
 	return false
 }
 
-func waitForExit(cleanup func()) {
-	sigChan := make(chan os.Signal, 1)
-
-	signal.Notify(sigChan,
-		os.Interrupt,    // Ctrl+C
-		syscall.SIGTERM, // kill
-	)
-
-	<-sigChan
-	cleanup()
-	os.Exit(0)
-}
-
 func main() {
 	Init()
 
-	go waitForExit(func() {
-		drivers.GlobalDisplay.Close()
-		drivers.GlobalDisplay.Clear()
-	})
+	defer drivers.GlobalDisplay.Close()
+	defer drivers.GlobalDisplay.Clear()
+	defer drivers.GlobalKeyboard.Close()
 
 	for {
 		start := time.Now()

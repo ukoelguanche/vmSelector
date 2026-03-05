@@ -1,7 +1,10 @@
 package drivers
 
 import (
+	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"syscall"
@@ -34,6 +37,10 @@ type Display struct {
 }
 
 func InitDisplay(vw, vh int) *Display {
+
+	exec.Command("stty", "-F", "/dev/tty", "-echo", "-icanon").Run()
+	fmt.Print("\033[?25l")
+
 	sw, sh = getDisplaySize()
 	f, err := os.OpenFile("/dev/fb0", os.O_RDWR, 0)
 	if err != nil {
@@ -129,11 +136,19 @@ func (d *Display) Clear() {
 	}
 }
 
+func (d *Display) ClearFinal() {
+	log.Printf("CLEARING display")
+	for i := range d.buffer {
+		d.buffer[i] = 0
+	}
+}
+
 func (d *Display) Present() {
 	copy(d.pixels, d.buffer)
 }
 
 func (d *Display) Close() {
+	log.Printf("CLOSING display")
 	d.Clear()
 	for i := range d.pixels {
 		d.pixels[i] = 0
