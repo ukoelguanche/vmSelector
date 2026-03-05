@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	_ "image/png"
+	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -15,7 +17,7 @@ import (
 	"apodeiktikos.com/fbtest/util"
 )
 
-const targetFPS = 30
+const targetFPS = 25
 const frameDelay = time.Second / targetFPS
 
 var gpuString string
@@ -25,11 +27,14 @@ var vms []model.VM
 var sprites model.Sprites
 var ring *model.SpriteInstance
 var sonic *model.SpriteInstance
+var clouds []*model.SpriteInstance
 
 var spriteInstances []*model.SpriteInstance
 var texts []*model.Text
 
 var selectedVMIndex = 0
+
+const hudOffset int32 = 175
 
 func Init() {
 	util.LoadContext()
@@ -39,48 +44,50 @@ func Init() {
 
 	spriteInstances = make([]*model.SpriteInstance, 0)
 
-	layer1 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer1", "idle", model.Point{X: 0, Y: 0})
-	layer1.TargetPosition.X = -3000
-	layer1.Speed = 3
-	spriteInstances = append(spriteInstances, layer1)
+	SetupClouds()
+	SetupGreenHillBackground()
+	SetupSonic()
+	SetupGreenHillForeground()
+	SetupHud()
 
-	layer2 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer2", "idle", model.Point{X: 0, Y: 32})
-	layer2.TargetPosition.X = -3000
-	layer2.Speed = 2
-	spriteInstances = append(spriteInstances, layer2)
-	layer3 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer3", "idle", model.Point{X: 0, Y: 48})
-	layer3.TargetPosition.X = -3000
-	layer3.Speed = 1
-	spriteInstances = append(spriteInstances, layer3)
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer4", "idle", model.Point{X: 0, Y: 64}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", model.Point{X: 0, Y: 112}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", model.Point{X: 0, Y: 152}))
+	spriteInstances = append(spriteInstances, ring)
+}
 
+func SetupSonic() {
+	sonic = model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 131})
+	sonic.OnAnimationComplete = OnAnimationComplete
+	spriteInstances = append(spriteInstances, sonic)
+}
+
+func SetupGreenHillForeground() {
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower1", "idle", model.Point{X: 154, Y: 90}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: -5, Y: 115}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 220, Y: 115}))
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 250, Y: 115}))
-
-	sonic = model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 131})
-	sonic.OnComplete = OnComplete
-	spriteInstances = append(spriteInstances, sonic)
 	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillForeground", "idle", model.Point{X: 0, Y: 0}))
+}
 
-	const hudOffset int32 = 175
+func SetupHud() {
 
 	for y := 0; y < 13; y++ {
 		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: hudOffset, Y: int32(y * 16)}))
 	}
 
-	texts = make([]*model.Text, 0)
+	SetupHUDTexts(hudOffset)
 
+	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
+	ring.OnAnimationComplete = OnAnimationComplete
+}
+
+func SetupHUDTexts(hudOffset int32) {
+	texts = make([]*model.Text, 0)
 	gpuString = util.ContextStorage.GpuString
 	centinelVM = model.GetVMByName(util.ContextStorage.CentineVMName)
 	vms = model.GetVMsWithGPU(gpuString, centinelVM)
 	for i, vm := range vms {
 		var text string
 		if vm.Equals(centinelVM) {
-			text = "Power off"
+			text = "POWER OFF"
 		} else {
 			text = vm.Name
 		}
@@ -90,15 +97,34 @@ func Init() {
 	}
 
 	texts[0].Position.X += 12
-	texts[0].TargetPosition.X += 12
+	texts[len(texts)-1].Position.Y += 12
 	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
+}
 
-	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
-	ring.OnComplete = OnComplete
-	spriteInstances = append(spriteInstances, ring)
+func SetupGreenHillBackground() {
+	layer3 := model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer3", "idle", model.Point{X: 0, Y: 48})
+	layer3.SetTargetPosition(layer3.Position.SetX(-980), model.Size{W: 1, H: 0})
+	layer3.OnMovementComplete = OnMovementComplete
+	spriteInstances = append(spriteInstances, layer3)
 
-	return
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer4", "idle", model.Point{X: 0, Y: 64}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", model.Point{X: 0, Y: 112}))
+	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", model.Point{X: 0, Y: 152}))
+}
 
+func SetupClouds() {
+	var cloudSprite *model.SpriteInstance
+	clouds = make([]*model.SpriteInstance, 0)
+	var y int32 = 0
+	for i := 0; i < 3; i++ {
+		cloudSprite = model.BuildSpriteInstance(sprites, fmt.Sprintf("GreenHillBackgroundLayer%d", i+1), "idle", model.Point{X: 0, Y: y})
+		cloudSprite.SetTargetPosition(cloudSprite.Position.SetX(-980), model.Size{W: 7 - int32(i)*2, H: 0})
+		cloudSprite.OnMovementComplete = OnMovementComplete
+		spriteInstances = append(spriteInstances, cloudSprite)
+		y += cloudSprite.Sprite.Frames[0].Size.H
+
+		clouds = append(clouds, cloudSprite)
+	}
 }
 
 func Loop() {
@@ -117,7 +143,7 @@ func Loop() {
 	drivers.GlobalDisplay.Present()
 }
 
-func OnComplete(sprite *model.SpriteInstance) {
+func OnAnimationComplete(sprite *model.SpriteInstance) {
 	if sprite == sonic {
 		keys := make([]string, 0, len(sprite.Sprite.Sequences))
 		for k := range sprite.Sprite.Sequences {
@@ -125,7 +151,9 @@ func OnComplete(sprite *model.SpriteInstance) {
 		}
 		randomSequence := keys[rand.Intn(len(keys))]
 		sonic.CurrentSequence = sonic.Sprite.Sequences[randomSequence]
-	} else if sprite == ring {
+	}
+
+	if sprite == ring {
 		fadeSeq := ring.Sprite.Sequences["fade"]
 		if &ring.CurrentSequence[0] == &fadeSeq[0] {
 			ring.CurrentSequence = ring.Sprite.Sequences["end"]
@@ -135,20 +163,33 @@ func OnComplete(sprite *model.SpriteInstance) {
 	}
 }
 
+func OnMovementComplete(sprite *model.SpriteInstance) {
+	if sprite == clouds[0] || sprite == clouds[1] || sprite == clouds[2] {
+		sprite.Position = sprite.Position.SetX(0)
+		sprite.SetTargetPosition(sprite.Position.SetX(-980), sprite.Speed)
+	}
+}
+
 func incrementVMIndex(value int) {
-	if selectedVMIndex >= len(vms) || selectedVMIndex < 0 {
+	if value == 0 || selectedVMIndex >= len(vms) || selectedVMIndex < 0 {
 		return
 	}
 
 	if math.Abs(float64(ring.TargetPosition.Y-ring.Position.Y)) > 1 {
 		return
 	}
-	texts[selectedVMIndex].TargetPosition.X -= 12
-	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
-	texts[selectedVMIndex].TargetPosition.X += 12
 
-	ring.TargetPosition.Y = texts[selectedVMIndex].Position.Y - 4
-	ring.Speed = 2
+	if ring.IsMoving() {
+		return
+	}
+
+	texts[selectedVMIndex].SetTargetPosition(texts[selectedVMIndex].Position.SetX(hudOffset+30), model.Size{W: 1})
+	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
+	texts[selectedVMIndex].SetTargetPosition(texts[selectedVMIndex].Position.SetX(hudOffset+42), model.Size{W: 1})
+
+	speed := ring.Speed.SetH(2)
+	targetPosition := ring.Position.SetY(texts[selectedVMIndex].Position.Y - 4)
+	ring.SetTargetPosition(targetPosition, speed)
 }
 
 func handleKeyboardInput() bool {
@@ -163,7 +204,10 @@ func handleKeyboardInput() bool {
 		ring.CurrentSequence = ring.Sprite.Sequences["fade"]
 	}
 
-	incrementVMIndex(int(dx))
+	if dx != 0 {
+		log.Printf("pulsando %d", dx)
+		incrementVMIndex(int(dx))
+	}
 
 	return false
 }
