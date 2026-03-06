@@ -1,6 +1,8 @@
 package drivers
 
-import "apodeiktikos.com/fbtest/model"
+import (
+	"apodeiktikos.com/fbtest/core"
+)
 
 const (
 	VW, VH = 320, 200
@@ -8,26 +10,7 @@ const (
 
 var GlobalDisplay *Display
 
-func DrawSpriteFrame(sprite *model.SpriteInstance) {
-	GlobalDisplay.DrawSpriteRect(sprite, sprite.CurrentFrame(), sprite.Position)
-}
-
-func DrawText(text *model.Text) {
-	cursorX := text.Position.X
-
-	letters := text.Sprite.Frames
-	characters := text.Sprite.Characters
-
-	for _, char := range text.Text {
-		sChar := string(char)
-		rect := letters[characters[sChar]]
-
-		GlobalDisplay.DrawSpriteRect(text, rect, model.Point{X: cursorX, Y: text.Position.Y})
-		cursorX += rect.Size.W + 1
-	}
-}
-
-func (d *Display) DrawSpriteRect(sprite model.Renderable, rect model.Rect, position model.Point) {
+func (d *Display) DrawSpriteRect(sprite *core.Sprite, rect core.Rect, position core.Point) {
 	bitmap := sprite.GetBitmap()
 	for sy := 0; sy < int(rect.Size.H); sy++ {
 		for sx := 0; sx < int(rect.Size.W); sx++ {

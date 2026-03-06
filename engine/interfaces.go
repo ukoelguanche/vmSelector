@@ -1,27 +1,35 @@
-package model
+package engine
 
-import "time"
+import (
+	"time"
+
+	"apodeiktikos.com/fbtest/core"
+)
+
+type Drawer interface {
+	DrawSpriteRect(sprite *core.Sprite, rect core.Rect, position core.Point)
+}
 
 type Renderable interface {
-	GetBitmap() *Bitmap
-	GetSprite() *Sprite
-	ProcessColor(color []byte) []byte
 	NextFrame()
-	GetPosition() Point
-	GetTargetPosition() Point
-	GetSpeed() Size
-	SetPosition(Point)
+	Draw(d Drawer)
+
+	GetSprite() *core.Sprite
+	GetPosition() core.Point
+	GetTargetPosition() core.Point
+	GetSpeed() core.Size
+	SetPosition(core.Point)
 	GetMovementFrameCount() float64
 	GetMovementFrame() float64
 	EndMovement()
 	IsMoving() bool
-	SetTargetPosition(Point)
+	SetTargetPosition(core.Point)
 	SetSpeed(float64)
 	GetTotalDistance() float64
 	SetEaseFunction(func(float64) float64)
 	GetEaseFunction() func(float64) float64
 	SetOnMovementComplete(func(Renderable))
-	GetStartPosition() Point
+	GetStartPosition() core.Point
 	GetStartTime() time.Time
 	GetDuration() time.Duration
 }
@@ -57,7 +65,7 @@ func UpdatePosition(r Renderable) {
 	nextX := start.X + (target.X-start.X)*easedT
 	nextY := start.Y + (target.Y-start.Y)*easedT
 
-	r.SetPosition(Point{X: nextX, Y: nextY})
+	r.SetPosition(core.Point{X: nextX, Y: nextY})
 
 	// 4. Condición de parada: Si el tiempo se agotó
 	if t >= 1.0 {

@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"apodeiktikos.com/fbtest/model"
+	"apodeiktikos.com/fbtest/core"
 )
 
-func LoadBitmap(path string) *model.Bitmap {
+func LoadBitmap(path string) *core.Bitmap {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -35,5 +35,5 @@ func LoadBitmap(path string) *model.Bitmap {
 			pixels[offset+3] = byte(a >> 8)
 		}
 	}
-	return &model.Bitmap{W: int32(w), H: int32(h), Pixels: pixels}
+	return &core.Bitmap{W: int32(w), H: int32(h), Pixels: pixels}
 }

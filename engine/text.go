@@ -1,16 +1,17 @@
-package model
+package engine
 
 import (
 	"math"
 	"time"
 
+	"apodeiktikos.com/fbtest/core"
 	"apodeiktikos.com/fbtest/util"
 )
 
 type Text struct {
-	Sprite             *Sprite
+	Sprite             *core.Sprite
 	Text               string
-	Speed              Size
+	Speed              core.Size
 	AbsSpeed           float64
 	movementFrameCount float64
 	movementFrame      float64
@@ -20,26 +21,38 @@ type Text struct {
 	totalDistance      float64
 
 	// Movement
-	Position       Point
-	StartPosition  Point
-	TargetPosition Point
+	Position       core.Point
+	StartPosition  core.Point
+	TargetPosition core.Point
 	StartTime      time.Time
 	Duration       time.Duration
 	TotalDistance  float64
 }
 
-func (t *Text) GetSprite() *Sprite {
-	return t.Sprite
+func (t *Text) GetSprite() *core.Sprite { return t.Sprite }
+func (t *Text) Draw(d Drawer) {
+	cursorX := t.Position.X
+
+	letters := t.Sprite.Frames
+	characters := t.Sprite.Characters
+
+	for _, char := range t.Text {
+		sChar := string(char)
+		rect := letters[characters[sChar]]
+
+		d.DrawSpriteRect(t.Sprite, rect, core.Point{X: cursorX, Y: t.Position.Y})
+		cursorX += rect.Size.W + 1
+	}
+
+	t.NextFrame()
 }
-func (t *Text) GetBitmap() *Bitmap {
-	return t.Sprite.Bitmap
-}
-func (t *Text) NextFrame()                 { UpdatePosition(t) }
-func (t *Text) SetPosition(position Point) { t.Position = position }
-func (t *Text) GetStartTime() time.Time    { return t.StartTime }
-func (t *Text) GetDuration() time.Duration { return t.Duration }
-func (t *Text) GetStartPosition() Point    { return t.StartPosition }
-func (si *Text) MoveTo(target Point, duration time.Duration) {
+
+func (t *Text) NextFrame()                      { UpdatePosition(t) }
+func (t *Text) SetPosition(position core.Point) { t.Position = position }
+func (t *Text) GetStartTime() time.Time         { return t.StartTime }
+func (t *Text) GetDuration() time.Duration      { return t.Duration }
+func (t *Text) GetStartPosition() core.Point    { return t.StartPosition }
+func (si *Text) MoveTo(target core.Point, duration time.Duration) {
 	si.StartPosition = si.Position
 	si.TargetPosition = target
 	si.StartTime = time.Now()
@@ -52,12 +65,12 @@ func (t *Text) GetEaseFunction() func(float64) float64   { return t.easeFunc }
 func (t *Text) GetTotalDistance() float64                { return t.totalDistance }
 func (t *Text) GetMovementFrameCount() float64           { return t.movementFrameCount }
 func (t *Text) GetMovementFrame() float64                { return t.movementFrame }
-func (t *Text) GetPosition() Point                       { return t.Position }
-func (t *Text) GetTargetPosition() Point                 { return t.TargetPosition }
-func (t *Text) GetSpeed() Size                           { return t.Speed }
+func (t *Text) GetPosition() core.Point                  { return t.Position }
+func (t *Text) GetTargetPosition() core.Point            { return t.TargetPosition }
+func (t *Text) GetSpeed() core.Size                      { return t.Speed }
 func (t *Text) IsMoving() bool                           { return t.Moving }
 
-func (t *Text) SetTargetPosition(targetPosition Point) {
+func (t *Text) SetTargetPosition(targetPosition core.Point) {
 	t.TargetPosition = targetPosition
 	t.Moving = true
 	t.totalDistance = math.Sqrt(math.Pow(targetPosition.X-t.Position.X, 2) + math.Pow(targetPosition.Y-t.Position.Y, 2))
@@ -73,7 +86,7 @@ func (t *Text) SetSpeed(absSpeed float64) {
 	t.movementFrame = 0
 
 	t.AbsSpeed = absSpeed
-	t.Speed = Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
+	t.Speed = core.Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
 }
 
 func (t *Text) EndMovement() {
@@ -86,9 +99,8 @@ func (t *Text) EndMovement() {
 		t.OnMovementComplete(t)
 	}
 }
-func (t *Text) ProcessColor(color []byte) []byte { return color }
 
-func BuildTextInstance(sprite *Sprite, text string, position Point) *Text {
+func BuildTextInstance(sprite *core.Sprite, text string, position core.Point) *Text {
 	return &Text{
 		Sprite:         sprite,
 		Text:           text,

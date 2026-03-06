@@ -1,213 +1,39 @@
 package main
 
 import (
-	"fmt"
 	_ "image/png"
 	"time"
 
+	"apodeiktikos.com/fbtest/core"
 	"apodeiktikos.com/fbtest/drivers"
+	"apodeiktikos.com/fbtest/engine"
 	"apodeiktikos.com/fbtest/loaders"
 	"apodeiktikos.com/fbtest/manager"
-	"apodeiktikos.com/fbtest/model"
+	"apodeiktikos.com/fbtest/render"
 	"apodeiktikos.com/fbtest/util"
 )
 
 const targetFPS = 25
 const frameDelay = time.Second / targetFPS
 
-var gpuString string
-var centinelVM *model.VM
-var vms []model.VM
-
-var sprites model.Sprites
-var ring *model.SpriteInstance
-
-var clouds []*model.SpriteInstance
-
-var spriteInstances []*model.SpriteInstance
-var texts []*model.Text
-var allowMove bool = true
-
-var selectedVMIndex = 0
-
-const hudOffset float64 = 175
+var renderables []engine.Renderable
 
 func Init() {
 	util.LoadContext()
 	drivers.GlobalDisplay = drivers.InitDisplay(drivers.VW, drivers.VH)
 	drivers.GlobalKeyboard = drivers.InitKeyboard()
 
+	var sprites core.Sprites
 	loaders.LoadSprites("./resources/sprites/Sprites.json", &sprites)
 
-	spriteInstances = make([]*model.SpriteInstance, 0)
+	renderables = make([]engine.Renderable, 0)
 
-	SetupClouds()
-	SetupGreenHillBackground()
-	SetupGreenHillForeground()
-	spriteInstances = append(spriteInstances, manager.SetupSonic(sprites))
-	SetupHud()
+	renderables = manager.SetupClouds(sprites, renderables)
+	renderables = manager.SetupGreenHillBackground(sprites, renderables)
+	renderables = manager.SetupGreenHillForeground(sprites, renderables)
 
-	spriteInstances = append(spriteInstances, ring)
-}
-
-func SetupGreenHillForeground() {
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower1", "idle", model.Point{X: 154, Y: 90}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: -5, Y: 115}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 220, Y: 115}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "Flower2", "idle", model.Point{X: 250, Y: 115}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillForeground", "idle", model.Point{X: 0, Y: 0}))
-}
-
-func SetupHud() {
-	for y := 0; y < 13; y++ {
-		spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "ZigZag", "idle", model.Point{X: hudOffset, Y: float64(y * 16)}))
-	}
-
-	SetupHUDTexts(hudOffset)
-
-	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
-	ring.SetEaseFunction(util.EaseInOutCubic)
-	ring.OnAnimationComplete = OnRingAnimationComplete
-}
-
-func SetupHUDTexts(hudOffset float64) {
-	texts = make([]*model.Text, 0)
-	gpuString = util.ContextStorage.GpuString
-	centinelVM = model.GetVMByName(util.ContextStorage.CentineVMName)
-	vms = model.GetVMsWithGPU(gpuString, centinelVM)
-	for i, vm := range vms {
-		var text string
-		if vm.Equals(centinelVM) {
-			text = "POWER OFF"
-		} else {
-			text = vm.Name
-		}
-
-		textInstance := model.BuildTextInstance(sprites.Sprites["BoldLetters"], text, model.Point{X: hudOffset + 30, Y: float64(i)*16 + 60})
-		texts = append(texts, textInstance)
-	}
-
-	texts[0].Position.X += 12
-	texts[len(texts)-1].Position.Y += 12
-	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
-}
-
-func SetupGreenHillBackground() {
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer4", "idle", model.Point{X: 0, Y: 64}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", model.Point{X: 0, Y: 112}))
-	spriteInstances = append(spriteInstances, model.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", model.Point{X: 0, Y: 152}))
-}
-
-func SetupClouds() {
-	var cloudSprite *model.SpriteInstance
-	clouds = make([]*model.SpriteInstance, 0)
-	var y float64 = 0
-	for i := 0; i < 3; i++ {
-		cloudSprite = model.BuildSpriteInstance(sprites, fmt.Sprintf("GreenHillBackgroundLayer%d", i+1), "idle", model.Point{X: 0, Y: float64(y)})
-
-		cloudSprite.MoveTo(cloudSprite.Position.SetX(-980), time.Duration(90000+i*10000)*time.Millisecond)
-
-		cloudSprite.OnMovementComplete = OnMovementComplete
-		spriteInstances = append(spriteInstances, cloudSprite)
-		y += cloudSprite.Sprite.Frames[0].Size.H
-
-		clouds = append(clouds, cloudSprite)
-	}
-}
-
-func Loop() {
-	drivers.GlobalDisplay.Clear()
-
-	for _, spriteInstance := range spriteInstances {
-		drivers.DrawSpriteFrame(spriteInstance)
-		spriteInstance.NextFrame()
-	}
-
-	for _, text := range texts {
-		drivers.DrawText(text)
-		text.NextFrame()
-	}
-
-	drivers.GlobalDisplay.Present()
-}
-
-func OnRingAnimationComplete(sprite *model.SpriteInstance) {
-	if sprite == ring {
-		fadeSeq := ring.Sprite.Sequences["fade"]
-		if &ring.CurrentSequence[0] == &fadeSeq[0] {
-			ring.CurrentSequence = ring.Sprite.Sequences["end"]
-			model.SwitchToVM(centinelVM, vms[selectedVMIndex])
-		}
-
-	}
-}
-
-func OnMovementComplete(sprite model.Renderable) {
-	if sprite == clouds[0] || sprite == clouds[1] || sprite == clouds[2] {
-		spritePosition := sprite.GetPosition()
-		sprite.SetPosition(spritePosition.SetX(0))
-		sprite.SetTargetPosition(spritePosition.SetX(-980))
-	}
-	for _, text := range texts {
-		if sprite == text {
-			text.SetEaseFunction(util.EaseInOutQuad)
-			text.MoveTo(model.Point{X: 320, Y: text.Position.Y}, 300*time.Millisecond)
-		}
-	}
-}
-
-func SelectMenuOption() {
-	ci := 0
-	for i, text := range texts[:len(texts)-1] {
-		if i == selectedVMIndex || i == len(texts)-1 {
-			continue
-		}
-		text.OnMovementComplete = OnMovementComplete
-		text.SetEaseFunction(util.EaseInOutQuad)
-		text.MoveTo(text.Position, time.Duration(ci*100)*time.Millisecond)
-		ci++
-	}
-}
-
-func incrementVMIndex(value int) {
-	if value == 0 || selectedVMIndex >= len(vms) || selectedVMIndex < 0 {
-		return
-	}
-
-	if ring.IsMoving() {
-		return
-	}
-
-	const transitionDuaration = 200 * time.Millisecond
-	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+30), transitionDuaration)
-	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
-	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+42), transitionDuaration)
-
-	ring.MoveTo(ring.Position.SetY(texts[selectedVMIndex].Position.Y-4), transitionDuaration)
-	ring.OnMovementComplete = OnMovementComplete
-}
-
-func handleKeyboardInput() bool {
-	kbd := drivers.GlobalKeyboard.GetInput()
-	var inc int
-
-	if kbd == drivers.KBD_ESCAPE {
-		return true
-	} else if kbd == drivers.KBD_RETURN {
-		SelectMenuOption()
-	} else if kbd == drivers.KBD_SPACE {
-		manager.SonicStartJump()
-	} else if kbd == drivers.KBD_UP {
-		inc = -1
-	} else if kbd == drivers.KBD_DOWN {
-		inc = 1
-	} else if kbd == drivers.KBD_LEFT {
-	} else if kbd == drivers.KBD_RIGHT {
-	}
-
-	incrementVMIndex(inc)
-
-	return false
+	renderables = append(renderables, manager.SetupSonic(sprites))
+	renderables = manager.SetupHud(sprites, renderables)
 }
 
 func main() {
@@ -232,4 +58,36 @@ func main() {
 			time.Sleep(frameDelay - elapsed)
 		}
 	}
+}
+
+func handleKeyboardInput() bool {
+	kbd := drivers.GlobalKeyboard.GetInput()
+	var inc int
+
+	if kbd == drivers.KBD_ESCAPE {
+		return true
+	} else if kbd == drivers.KBD_RETURN {
+		manager.SelectMenuOption()
+	} else if kbd == drivers.KBD_SPACE {
+		manager.SonicStartJump()
+	} else if kbd == drivers.KBD_UP {
+		inc = -1
+	} else if kbd == drivers.KBD_DOWN {
+		inc = 1
+	} else if kbd == drivers.KBD_LEFT {
+	} else if kbd == drivers.KBD_RIGHT {
+	}
+
+	manager.IncrementVMIndex(inc)
+
+	return false
+}
+
+func Loop() {
+	drivers.GlobalDisplay.Clear()
+	for _, renderable := range renderables {
+		render.RenderEntity(renderable)
+		renderable.NextFrame()
+	}
+	drivers.GlobalDisplay.Present()
 }

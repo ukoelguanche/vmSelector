@@ -1,12 +1,14 @@
-package model
+package engine
 
 import (
 	"math"
 	"time"
+
+	"apodeiktikos.com/fbtest/core"
 )
 
 type SpriteInstance struct {
-	Sprite *Sprite
+	Sprite *core.Sprite
 
 	FrameIdx                int
 	CurrentSequence         []int
@@ -22,52 +24,47 @@ type SpriteInstance struct {
 	movementFrame           float64
 	easeFunc                func(float64) float64
 
-	CurrentPalleteSwapOffset   float32
-	CurrentPalleteSwapPosition float32
-
 	PaletteSwapIndex int
-	Speed            Size
+	Speed            core.Size
 	AbsSpeed         float64
 
-	Position       Point
-	StartPosition  Point
-	TargetPosition Point
+	Position       core.Point
+	StartPosition  core.Point
+	TargetPosition core.Point
 	StartTime      time.Time
 	Duration       time.Duration
 	TotalDistance  float64
 }
 
-func (si *SpriteInstance) GetSprite() *Sprite {
+func (si *SpriteInstance) GetSprite() *core.Sprite {
 	return si.Sprite
-}
-func (si *SpriteInstance) GetBitmap() *Bitmap {
-	return si.Sprite.Bitmap
 }
 func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
 func (si *SpriteInstance) GetStartTime() time.Time                 { return si.StartTime }
 func (si *SpriteInstance) GetDuration() time.Duration              { return si.Duration }
-func (si *SpriteInstance) GetStartPosition() Point                 { return si.StartPosition }
-func (si *SpriteInstance) MoveTo(target Point, duration time.Duration) {
+func (si *SpriteInstance) GetStartPosition() core.Point            { return si.StartPosition }
+func (si *SpriteInstance) MoveTo(target core.Point, duration time.Duration) {
 	si.StartPosition = si.Position
 	si.TargetPosition = target
 	si.StartTime = time.Now()
 	si.Duration = duration
 	si.Moving = true
 }
+
 func (si *SpriteInstance) SetOnMovementComplete(f func(Renderable)) { si.OnMovementComplete = f }
 func (si *SpriteInstance) GetEaseFunction() func(float64) float64   { return si.easeFunc }
 func (si *SpriteInstance) GetMovementFrameCount() float64           { return si.movementFrameCount }
 func (si *SpriteInstance) GetMovementFrame() float64                { return si.movementFrame }
 func (si *SpriteInstance) GetTotalDistance() float64                { return si.totalDistance }
-func (si *SpriteInstance) GetPosition() Point                       { return si.Position }
-func (si *SpriteInstance) GetTargetPosition() Point                 { return si.TargetPosition }
-func (si *SpriteInstance) GetSpeed() Size                           { return si.Speed }
+func (si *SpriteInstance) GetPosition() core.Point                  { return si.Position }
+func (si *SpriteInstance) GetTargetPosition() core.Point            { return si.TargetPosition }
+func (si *SpriteInstance) GetSpeed() core.Size                      { return si.Speed }
 func (si *SpriteInstance) IsMoving() bool                           { return si.Moving }
 
-func (si *SpriteInstance) SetPosition(position Point) {
+func (si *SpriteInstance) SetPosition(position core.Point) {
 	si.Position = position
 }
-func (si *SpriteInstance) SetTargetPosition(targetPosition Point) {
+func (si *SpriteInstance) SetTargetPosition(targetPosition core.Point) {
 
 	si.TargetPosition = targetPosition
 
@@ -85,7 +82,7 @@ func (si *SpriteInstance) SetSpeed(absSpeed float64) {
 	si.movementFrame = 0
 
 	si.AbsSpeed = absSpeed
-	si.Speed = Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
+	si.Speed = core.Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
 }
 
 func (si *SpriteInstance) EndMovement() {
@@ -98,14 +95,8 @@ func (si *SpriteInstance) EndMovement() {
 	}
 }
 
-func (si *SpriteInstance) ProcessColor(color []byte) []byte {
-	if si.Sprite.PaletteSwap.TargetPalette != nil {
-		return ReplacePalette(color,
-			si.Sprite.PaletteSwap.SourcePalette,
-			si.Sprite.PaletteSwap.TargetPalette,
-			si.CurrentSwapPaletteIndex())
-	}
-	return color
+func (s *SpriteInstance) Draw(d Drawer) {
+	d.DrawSpriteRect(s.Sprite, s.CurrentFrame(), s.Position)
 }
 
 func (s *SpriteInstance) NextFrame() {
@@ -123,45 +114,29 @@ func (s *SpriteInstance) NextFrame() {
 
 	}
 
-	// Swap palettes
-	if s.Sprite.PaletteSwap.TargetPalette == nil {
-		return
-	}
-
-	s.CurrentPalleteSwapPosition += s.CurrentPalleteSwapOffset
-	if s.CurrentPalleteSwapPosition >= 1 {
-		s.CurrentPalleteSwapPosition = 0
-	}
 }
 
-func (s *SpriteInstance) CurrentFrame() Rect {
+func (s *SpriteInstance) CurrentFrame() core.Rect {
 	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
 
 	return s.Sprite.Frames[s.CurrentSequence[frame]]
 }
 
-func (s *SpriteInstance) CurrentSwapPaletteIndex() int {
-	return int(float32(len(*s.Sprite.PaletteSwap.TargetPalette)) * s.CurrentPalleteSwapPosition)
-}
-
-func BuildSpriteInstance(sprites Sprites, name string, sequenceName string, position Point) *SpriteInstance {
+func BuildSpriteInstance(sprites core.Sprites, name string, sequenceName string, position core.Point) *SpriteInstance {
 	sequence := sprites.Sprites[name].Sequences[sequenceName]
 	relativeSeqenceSpeed := float32(0.5)
-	relativePaletteSwapSpeed := float32(0.07)
+	//relativePaletteSwapSpeed := float32(0.07)
 	spriteInstance := &SpriteInstance{
-		Sprite:                     sprites.Sprites[name],
-		Position:                   position,
-		TargetPosition:             position,
-		FrameIdx:                   0,
-		CurrentSequence:            sequence,
-		SequenceOffset:             1 / float32(len(sequence)) * relativeSeqenceSpeed,
-		CurrentSequencePosition:    0.0,
-		SequenceLength:             len(sequence),
-		CurrentPalleteSwapOffset:   1 / float32(len(sequence)) * relativePaletteSwapSpeed,
-		CurrentPalleteSwapPosition: 0.0,
-		Moving:                     false,
+		Sprite:                  sprites.Sprites[name],
+		Position:                position,
+		TargetPosition:          position,
+		FrameIdx:                0,
+		CurrentSequence:         sequence,
+		SequenceOffset:          1 / float32(len(sequence)) * relativeSeqenceSpeed,
+		CurrentSequencePosition: 0.0,
+		SequenceLength:          len(sequence),
+		Moving:                  false,
 	}
 
 	return spriteInstance
-
 }
