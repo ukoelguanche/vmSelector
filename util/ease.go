@@ -12,3 +12,23 @@ func EaseInOutCubic(t float64) float64 {
 	}
 	return 1 - math.Pow(-2*t+2, 3)/2
 }
+
+func EaseInOutQuad(t float64) float64 {
+	if t < 0.5 {
+		return 2 * t * t
+	}
+	return -1 + (4-2*t)*t
+}
+
+func EaseOutQuad(t float64) float64 {
+	return t * (2 - t)
+}
+
+func EaseInQuad(t float64) float64 {
+	return t * t
+}
+
+func EaseOutCubic(t float64) float64 {
+	t-- // Decrementamos t primero
+	return t*t*t + 1
+}

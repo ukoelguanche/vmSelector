@@ -43,16 +43,16 @@ func Init() {
 
 	SetupClouds()
 	SetupGreenHillBackground()
-	SetupSonic()
 	SetupGreenHillForeground()
+	SetupSonic()
 	SetupHud()
 
 	spriteInstances = append(spriteInstances, ring)
 }
 
 func SetupSonic() {
-	sonic = model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 35, Y: 131})
-	sonic.OnAnimationComplete = OnAnimationComplete
+	sonic = model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 39, Y: 132})
+	sonic.OnAnimationComplete = SonicIddleAnimationComplete
 	spriteInstances = append(spriteInstances, sonic)
 }
 
@@ -73,7 +73,7 @@ func SetupHud() {
 
 	ring = model.BuildSpriteInstance(sprites, "Ring", "idle", model.Point{X: hudOffset + 20, Y: 56})
 	ring.SetEaseFunction(util.EaseInOutCubic)
-	ring.OnAnimationComplete = OnAnimationComplete
+	ring.OnAnimationComplete = OnRingAnimationComplete
 }
 
 func SetupHUDTexts(hudOffset float64) {
@@ -137,16 +137,7 @@ func Loop() {
 	drivers.GlobalDisplay.Present()
 }
 
-func OnAnimationComplete(sprite *model.SpriteInstance) {
-	if sprite == sonic {
-		keys := make([]string, 0, len(sprite.Sprite.Sequences))
-		for k := range sprite.Sprite.Sequences {
-			keys = append(keys, k)
-		}
-		randomSequence := keys[rand.Intn(len(keys))]
-		sonic.CurrentSequence = sonic.Sprite.Sequences[randomSequence]
-	}
-
+func OnRingAnimationComplete(sprite *model.SpriteInstance) {
 	if sprite == ring {
 		fadeSeq := ring.Sprite.Sequences["fade"]
 		if &ring.CurrentSequence[0] == &fadeSeq[0] {
@@ -157,6 +148,16 @@ func OnAnimationComplete(sprite *model.SpriteInstance) {
 	}
 }
 
+func SonicIddleAnimationComplete(sprite *model.SpriteInstance) {
+	keys := make([]string, 0, len(sprite.Sprite.Sequences))
+	for k := range sprite.Sprite.Sequences {
+		keys = append(keys, k)
+	}
+	randomSequence := keys[rand.Intn(len(keys))]
+
+	sonic.CurrentSequence = sonic.Sprite.Sequences[randomSequence]
+}
+
 func OnMovementComplete(sprite model.Renderable) {
 	if sprite == clouds[0] || sprite == clouds[1] || sprite == clouds[2] {
 		spritePosition := sprite.GetPosition()
@@ -165,9 +166,33 @@ func OnMovementComplete(sprite model.Renderable) {
 	}
 	for _, text := range texts {
 		if sprite == text {
-			text.SetEaseFunction(util.EaseInOutCubic)
+			text.SetEaseFunction(util.EaseInOutQuad)
 			text.MoveTo(model.Point{X: 320, Y: text.Position.Y}, 300*time.Millisecond)
 		}
+	}
+}
+
+func SonicJump1(sprite model.Renderable) {
+	sonic.SetOnMovementComplete(SonicJump2)
+	sonic.MoveTo(sonic.GetPosition().IncY(80), 200*time.Millisecond)
+
+}
+
+func SonicJump2(sprite model.Renderable) {
+	sonic.SetOnMovementComplete(nil)
+	sonic.CurrentSequence = sonic.Sprite.Sequences["idle"]
+}
+
+func SelectMenuOption() {
+	ci := 0
+	for i, text := range texts[:len(texts)-1] {
+		if i == selectedVMIndex || i == len(texts)-1 {
+			continue
+		}
+		text.OnMovementComplete = OnMovementComplete
+		text.SetEaseFunction(util.EaseInOutQuad)
+		text.MoveTo(text.Position, time.Duration(ci*100)*time.Millisecond)
+		ci++
 	}
 }
 
@@ -189,33 +214,25 @@ func incrementVMIndex(value int) {
 	ring.OnMovementComplete = OnMovementComplete
 }
 
-func SelectMenuOption() {
-	for i, text := range texts[:len(texts)-1] {
-		if i == selectedVMIndex || i == len(texts)-1 {
-			continue
-		}
-		text.OnMovementComplete = OnMovementComplete
-		text.SetEaseFunction(util.EaseInOutCubic)
-		text.MoveTo(text.Position, time.Duration(i*300)*time.Millisecond)
-	}
-}
-
 func handleKeyboardInput() bool {
 	kbd := drivers.GlobalKeyboard.GetInput()
+	var inc int
 
 	if kbd == drivers.KBD_ESCAPE {
 		return true
-	}
-
-	if kbd == drivers.KBD_RETURN {
+	} else if kbd == drivers.KBD_RETURN {
 		SelectMenuOption()
-	}
-
-	var inc int
-	if kbd == drivers.KBD_UP || kbd == drivers.KBD_LEFT {
+	} else if kbd == drivers.KBD_SPACE {
+		sonic.CurrentSequence = sonic.Sprite.Sequences["jump"]
+		sonic.SetEaseFunction(util.EaseOutQuad)
+		sonic.OnMovementComplete = SonicJump1
+		sonic.MoveTo(sonic.GetPosition().IncY(-80), 400*time.Millisecond)
+	} else if kbd == drivers.KBD_UP {
 		inc = -1
-	} else if kbd == drivers.KBD_DOWN || kbd == drivers.KBD_RIGHT {
+	} else if kbd == drivers.KBD_DOWN {
 		inc = 1
+	} else if kbd == drivers.KBD_LEFT {
+	} else if kbd == drivers.KBD_RIGHT {
 	}
 
 	incrementVMIndex(inc)

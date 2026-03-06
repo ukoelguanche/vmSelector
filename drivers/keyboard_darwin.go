@@ -17,6 +17,8 @@ func (k *Keyboard) GetInput() KeyboardInput {
 			switch t.Keysym.Sym {
 			case sdl.K_UP:
 				return KBD_UP
+			case sdl.K_SPACE:
+				return KBD_SPACE
 			case sdl.K_DOWN:
 				return KBD_DOWN
 			case sdl.K_LEFT:
