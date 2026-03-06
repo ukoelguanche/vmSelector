@@ -33,14 +33,8 @@ func (s *Sprite) ProcessColor(color []byte) []byte {
 		return color
 	}
 
-	if s.CurrentPalleteSwapPosition >= 1 {
-		s.CurrentPalleteSwapPosition = 0
-	}
-
 	index := s.CurrentSwapPaletteIndex()
 	color = s.PaletteSwap.SourcePalette.ReplacePalette(color, s.PaletteSwap.TargetPalette, index)
-
-	s.CurrentPalleteSwapPosition += s.CurrentPalleteSwapOffset
 
 	return color
 }

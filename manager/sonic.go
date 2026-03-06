@@ -14,8 +14,8 @@ var lastIdleTime time.Time = time.Now()
 var boredInterval time.Duration = 3
 var boredAnimations = []string{"stare", "RaiseEyebrows", "FootTap"}
 var jumping = false
-var jumpHeight float64 = 80
-var jumpDuration = 200 * time.Millisecond
+var jumpHeight float64 = 70
+var jumpDuration = 350 * time.Millisecond
 
 func SetupSonic(sprites core.Sprites) *engine.SpriteInstance {
 	sonic = engine.BuildSpriteInstance(sprites, "Sonic", "idle", core.Point{X: 39, Y: 132})
@@ -56,6 +56,7 @@ func SonicStartJump() {
 
 func SonicJump1(engine.Renderable) {
 	sonic.SetOnMovementComplete(SonicJump2)
+	sonic.SetEaseFunction(util.EaseInQuad)
 	sonic.MoveTo(sonic.GetPosition().IncY(jumpHeight), jumpDuration)
 
 }

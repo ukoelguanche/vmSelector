@@ -36,4 +36,9 @@ func (d *Display) DrawSpriteRect(sprite *core.Sprite, rect core.Rect, position c
 			d.DrawPixel(int32(position.X)+int32(sx), int32(position.Y)+int32(sy), finalColor)
 		}
 	}
+
+	if sprite.CurrentPalleteSwapPosition >= 1 {
+		sprite.CurrentPalleteSwapPosition = 0
+	}
+	sprite.CurrentPalleteSwapPosition += sprite.CurrentPalleteSwapOffset
 }

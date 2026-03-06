@@ -40,7 +40,7 @@
       "Sequences": {
         "idle":  [0]
       },
-      "RelativePaletteSwapSpeed": 0.7,
+      "RelativePaletteSwapSpeed": 0.5,
       "PaletteSwap": {
         "SourcePaletteName": "WaterSource",
         "TargetPaletteName": "WaterTarget"
@@ -52,7 +52,7 @@
       "Sequences": {
         "idle":  [0]
       },
-      "RelativePaletteSwapSpeed": 0.7,
+      "RelativePaletteSwapSpeed": 0.5,
       "PaletteSwap": {
         "SourcePaletteName": "WaterSource",
         "TargetPaletteName": "WaterTarget"
