@@ -20,7 +20,7 @@ type Renderable interface {
 	GetTotalDistance() float64
 	SetEaseFunction(func(float64) float64)
 	GetEaseFunction() func(float64) float64
-
+	SetOnMovementComplete(func(Renderable))
 	GetStartPosition() Point
 	GetStartTime() time.Time
 	GetDuration() time.Duration

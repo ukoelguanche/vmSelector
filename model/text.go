@@ -15,7 +15,7 @@ type Text struct {
 	movementFrameCount float64
 	movementFrame      float64
 	Moving             bool
-	OnMovementComplete func(t *Text)
+	OnMovementComplete func(Renderable)
 	easeFunc           func(float64) float64
 	totalDistance      float64
 
@@ -46,16 +46,16 @@ func (si *Text) MoveTo(target Point, duration time.Duration) {
 	si.Duration = duration
 	si.Moving = true
 }
-
-func (t *Text) SetEaseFunction(f func(float64) float64) { t.easeFunc = f }
-func (t *Text) GetEaseFunction() func(float64) float64  { return t.easeFunc }
-func (t *Text) GetTotalDistance() float64               { return t.totalDistance }
-func (t *Text) GetMovementFrameCount() float64          { return t.movementFrameCount }
-func (t *Text) GetMovementFrame() float64               { return t.movementFrame }
-func (t *Text) GetPosition() Point                      { return t.Position }
-func (t *Text) GetTargetPosition() Point                { return t.TargetPosition }
-func (t *Text) GetSpeed() Size                          { return t.Speed }
-func (t *Text) IsMoving() bool                          { return t.Moving }
+func (t *Text) SetOnMovementComplete(f func(Renderable)) { t.OnMovementComplete = f }
+func (t *Text) SetEaseFunction(f func(float64) float64)  { t.easeFunc = f }
+func (t *Text) GetEaseFunction() func(float64) float64   { return t.easeFunc }
+func (t *Text) GetTotalDistance() float64                { return t.totalDistance }
+func (t *Text) GetMovementFrameCount() float64           { return t.movementFrameCount }
+func (t *Text) GetMovementFrame() float64                { return t.movementFrame }
+func (t *Text) GetPosition() Point                       { return t.Position }
+func (t *Text) GetTargetPosition() Point                 { return t.TargetPosition }
+func (t *Text) GetSpeed() Size                           { return t.Speed }
+func (t *Text) IsMoving() bool                           { return t.Moving }
 
 func (t *Text) SetTargetPosition(targetPosition Point) {
 	t.TargetPosition = targetPosition

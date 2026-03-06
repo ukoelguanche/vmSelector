@@ -157,12 +157,17 @@ func OnAnimationComplete(sprite *model.SpriteInstance) {
 	}
 }
 
-func OnMovementComplete(sprite *model.SpriteInstance) {
+func OnMovementComplete(sprite model.Renderable) {
 	if sprite == clouds[0] || sprite == clouds[1] || sprite == clouds[2] {
-		sprite.Position = sprite.Position.SetX(0)
-		sprite.SetTargetPosition(sprite.Position.SetX(-980))
-	} else if sprite == ring {
-		return
+		spritePosition := sprite.GetPosition()
+		sprite.SetPosition(spritePosition.SetX(0))
+		sprite.SetTargetPosition(spritePosition.SetX(-980))
+	}
+	for _, text := range texts {
+		if sprite == text {
+			text.SetEaseFunction(util.EaseInOutCubic)
+			text.MoveTo(model.Point{X: 320, Y: text.Position.Y}, 300*time.Millisecond)
+		}
 	}
 }
 
@@ -189,8 +194,9 @@ func SelectMenuOption() {
 		if i == selectedVMIndex || i == len(texts)-1 {
 			continue
 		}
+		text.OnMovementComplete = OnMovementComplete
 		text.SetEaseFunction(util.EaseInOutCubic)
-		text.MoveTo(model.Point{X: 320, Y: text.Position.Y}, time.Duration((i+1)*300)*time.Millisecond)
+		text.MoveTo(text.Position, time.Duration(i*300)*time.Millisecond)
 	}
 }
 

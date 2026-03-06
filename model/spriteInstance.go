@@ -16,7 +16,7 @@ type SpriteInstance struct {
 	Scale                   float64
 	Moving                  bool
 	OnAnimationComplete     func(*SpriteInstance)
-	OnMovementComplete      func(*SpriteInstance)
+	OnMovementComplete      func(Renderable)
 	totalDistance           float64
 	movementFrameCount      float64
 	movementFrame           float64
@@ -54,15 +54,15 @@ func (si *SpriteInstance) MoveTo(target Point, duration time.Duration) {
 	si.Duration = duration
 	si.Moving = true
 }
-
-func (si *SpriteInstance) GetEaseFunction() func(float64) float64 { return si.easeFunc }
-func (si *SpriteInstance) GetMovementFrameCount() float64         { return si.movementFrameCount }
-func (si *SpriteInstance) GetMovementFrame() float64              { return si.movementFrame }
-func (si *SpriteInstance) GetTotalDistance() float64              { return si.totalDistance }
-func (si *SpriteInstance) GetPosition() Point                     { return si.Position }
-func (si *SpriteInstance) GetTargetPosition() Point               { return si.TargetPosition }
-func (si *SpriteInstance) GetSpeed() Size                         { return si.Speed }
-func (si *SpriteInstance) IsMoving() bool                         { return si.Moving }
+func (si *SpriteInstance) SetOnMovementComplete(f func(Renderable)) { si.OnMovementComplete = f }
+func (si *SpriteInstance) GetEaseFunction() func(float64) float64   { return si.easeFunc }
+func (si *SpriteInstance) GetMovementFrameCount() float64           { return si.movementFrameCount }
+func (si *SpriteInstance) GetMovementFrame() float64                { return si.movementFrame }
+func (si *SpriteInstance) GetTotalDistance() float64                { return si.totalDistance }
+func (si *SpriteInstance) GetPosition() Point                       { return si.Position }
+func (si *SpriteInstance) GetTargetPosition() Point                 { return si.TargetPosition }
+func (si *SpriteInstance) GetSpeed() Size                           { return si.Speed }
+func (si *SpriteInstance) IsMoving() bool                           { return si.Moving }
 
 func (si *SpriteInstance) SetPosition(position Point) {
 	si.Position = position
