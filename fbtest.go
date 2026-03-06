@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	_ "image/png"
-	"math"
 	"math/rand"
 	"time"
 
@@ -27,6 +26,7 @@ var clouds []*model.SpriteInstance
 
 var spriteInstances []*model.SpriteInstance
 var texts []*model.Text
+var allowMove bool = true
 
 var selectedVMIndex = 0
 
@@ -81,7 +81,6 @@ func SetupHUDTexts(hudOffset float64) {
 	gpuString = util.ContextStorage.GpuString
 	centinelVM = model.GetVMByName(util.ContextStorage.CentineVMName)
 	vms = model.GetVMsWithGPU(gpuString, centinelVM)
-	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
 	for i, vm := range vms {
 		var text string
 		if vm.Equals(centinelVM) {
@@ -96,6 +95,7 @@ func SetupHUDTexts(hudOffset float64) {
 
 	texts[0].Position.X += 12
 	texts[len(texts)-1].Position.Y += 12
+	texts = append(texts, model.BuildTextInstance(sprites.Sprites["GenesisLetters"], centinelVM.Name, model.Point{X: hudOffset + 20, Y: 30}))
 }
 
 func SetupGreenHillBackground() {
@@ -161,6 +161,8 @@ func OnMovementComplete(sprite *model.SpriteInstance) {
 	if sprite == clouds[0] || sprite == clouds[1] || sprite == clouds[2] {
 		sprite.Position = sprite.Position.SetX(0)
 		sprite.SetTargetPosition(sprite.Position.SetX(-980))
+	} else if sprite == ring {
+		return
 	}
 }
 
@@ -168,9 +170,7 @@ func incrementVMIndex(value int) {
 	if value == 0 || selectedVMIndex >= len(vms) || selectedVMIndex < 0 {
 		return
 	}
-	if math.Abs(float64(ring.TargetPosition.Y-ring.Position.Y)) > 1 {
-		return
-	}
+
 	if ring.IsMoving() {
 		return
 	}
@@ -181,6 +181,17 @@ func incrementVMIndex(value int) {
 	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+42), transitionDuaration)
 
 	ring.MoveTo(ring.Position.SetY(texts[selectedVMIndex].Position.Y-4), transitionDuaration)
+	ring.OnMovementComplete = OnMovementComplete
+}
+
+func SelectMenuOption() {
+	for i, text := range texts[:len(texts)-1] {
+		if i == selectedVMIndex || i == len(texts)-1 {
+			continue
+		}
+		text.SetEaseFunction(util.EaseInOutCubic)
+		text.MoveTo(model.Point{X: 320, Y: text.Position.Y}, time.Duration((i+1)*300)*time.Millisecond)
+	}
 }
 
 func handleKeyboardInput() bool {
@@ -191,14 +202,7 @@ func handleKeyboardInput() bool {
 	}
 
 	if kbd == drivers.KBD_RETURN {
-		ring.CurrentSequencePosition = 0.0
-		for i, text := range texts {
-			if i == selectedVMIndex || i == 0 {
-				continue
-			}
-			text.SetEaseFunction(util.EaseInOutCubic)
-			text.MoveTo(model.Point{X: 350, Y: text.Position.Y}, time.Duration((i+1)*300)*time.Millisecond)
-		}
+		SelectMenuOption()
 	}
 
 	var inc int
@@ -230,6 +234,7 @@ func main() {
 		Loop()
 
 		elapsed := time.Since(start)
+		//log.Println("Elapsed time: ", elapsed)
 		if elapsed < frameDelay {
 			time.Sleep(frameDelay - elapsed)
 		}
