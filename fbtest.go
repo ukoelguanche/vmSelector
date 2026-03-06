@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	_ "image/png"
-	"math/rand"
 	"time"
 
 	"apodeiktikos.com/fbtest/drivers"
 	"apodeiktikos.com/fbtest/loaders"
+	"apodeiktikos.com/fbtest/manager"
 	"apodeiktikos.com/fbtest/model"
 	"apodeiktikos.com/fbtest/util"
 )
@@ -21,7 +21,7 @@ var vms []model.VM
 
 var sprites model.Sprites
 var ring *model.SpriteInstance
-var sonic *model.SpriteInstance
+
 var clouds []*model.SpriteInstance
 
 var spriteInstances []*model.SpriteInstance
@@ -44,16 +44,10 @@ func Init() {
 	SetupClouds()
 	SetupGreenHillBackground()
 	SetupGreenHillForeground()
-	SetupSonic()
+	spriteInstances = append(spriteInstances, manager.SetupSonic(sprites))
 	SetupHud()
 
 	spriteInstances = append(spriteInstances, ring)
-}
-
-func SetupSonic() {
-	sonic = model.BuildSpriteInstance(sprites, "Sonic", "idle", model.Point{X: 39, Y: 132})
-	sonic.OnAnimationComplete = SonicIddleAnimationComplete
-	spriteInstances = append(spriteInstances, sonic)
 }
 
 func SetupGreenHillForeground() {
@@ -148,16 +142,6 @@ func OnRingAnimationComplete(sprite *model.SpriteInstance) {
 	}
 }
 
-func SonicIddleAnimationComplete(sprite *model.SpriteInstance) {
-	keys := make([]string, 0, len(sprite.Sprite.Sequences))
-	for k := range sprite.Sprite.Sequences {
-		keys = append(keys, k)
-	}
-	randomSequence := keys[rand.Intn(len(keys))]
-
-	sonic.CurrentSequence = sonic.Sprite.Sequences[randomSequence]
-}
-
 func OnMovementComplete(sprite model.Renderable) {
 	if sprite == clouds[0] || sprite == clouds[1] || sprite == clouds[2] {
 		spritePosition := sprite.GetPosition()
@@ -170,17 +154,6 @@ func OnMovementComplete(sprite model.Renderable) {
 			text.MoveTo(model.Point{X: 320, Y: text.Position.Y}, 300*time.Millisecond)
 		}
 	}
-}
-
-func SonicJump1(sprite model.Renderable) {
-	sonic.SetOnMovementComplete(SonicJump2)
-	sonic.MoveTo(sonic.GetPosition().IncY(80), 200*time.Millisecond)
-
-}
-
-func SonicJump2(sprite model.Renderable) {
-	sonic.SetOnMovementComplete(nil)
-	sonic.CurrentSequence = sonic.Sprite.Sequences["idle"]
 }
 
 func SelectMenuOption() {
@@ -223,10 +196,7 @@ func handleKeyboardInput() bool {
 	} else if kbd == drivers.KBD_RETURN {
 		SelectMenuOption()
 	} else if kbd == drivers.KBD_SPACE {
-		sonic.CurrentSequence = sonic.Sprite.Sequences["jump"]
-		sonic.SetEaseFunction(util.EaseOutQuad)
-		sonic.OnMovementComplete = SonicJump1
-		sonic.MoveTo(sonic.GetPosition().IncY(-80), 400*time.Millisecond)
+		manager.SonicStartJump()
 	} else if kbd == drivers.KBD_UP {
 		inc = -1
 	} else if kbd == drivers.KBD_DOWN {
