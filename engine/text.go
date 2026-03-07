@@ -4,6 +4,7 @@ import (
 	"math"
 	"time"
 
+	"apodeiktikos.com/fbtest/interfaces"
 	"github.com/ukoelguanche/graphicsengine/core"
 )
 
@@ -15,8 +16,8 @@ type Text struct {
 	movementFrameCount  float64
 	movementFrame       float64
 	Moving              bool
-	OnMovementComplete  func(Renderable)
-	OnAnimationComplete func(Renderable)
+	OnMovementComplete  func(interfaces.Renderable)
+	OnAnimationComplete func(interfaces.Renderable)
 	easeFunc            func(float64) float64
 	totalDistance       float64
 
@@ -30,7 +31,7 @@ type Text struct {
 }
 
 func (t *Text) GetSprite() *core.Sprite { return t.Sprite }
-func (t *Text) Draw(d Drawer) {
+func (t *Text) Draw(d interfaces.Drawer) {
 	cursorX := t.Position.X
 
 	letters := t.Sprite.Frames
@@ -47,7 +48,7 @@ func (t *Text) Draw(d Drawer) {
 	t.NextFrame()
 }
 
-func (t *Text) NextFrame()                      { UpdatePosition(t) }
+func (t *Text) NextFrame()                      { interfaces.UpdatePosition(t) }
 func (t *Text) SetPosition(position core.Point) { t.Position = position }
 func (t *Text) GetStartTime() time.Time         { return t.StartTime }
 func (t *Text) GetDuration() time.Duration      { return t.Duration }
@@ -59,16 +60,15 @@ func (si *Text) MoveTo(target core.Point, duration time.Duration) {
 	si.Duration = duration
 	si.Moving = true
 }
-func (t *Text) SetOnMovementComplete(f func(Renderable)) { t.OnMovementComplete = f }
-func (t *Text) SetEaseFunction(f func(float64) float64)  { t.easeFunc = f }
-func (t *Text) GetEaseFunction() func(float64) float64   { return t.easeFunc }
-func (t *Text) GetTotalDistance() float64                { return t.totalDistance }
-func (t *Text) GetMovementFrameCount() float64           { return t.movementFrameCount }
-func (t *Text) GetMovementFrame() float64                { return t.movementFrame }
-func (t *Text) GetPosition() core.Point                  { return t.Position }
-func (t *Text) GetTargetPosition() core.Point            { return t.TargetPosition }
-func (t *Text) GetSpeed() core.Size                      { return t.Speed }
-func (t *Text) IsMoving() bool                           { return t.Moving }
+func (t *Text) SetOnMovementComplete(f func(interfaces.Renderable)) { t.OnMovementComplete = f }
+func (t *Text) SetEaseFunction(f func(float64) float64)             { t.easeFunc = f }
+func (t *Text) GetEaseFunction() func(float64) float64              { return t.easeFunc }
+func (t *Text) GetMovementFrameCount() float64                      { return t.movementFrameCount }
+func (t *Text) GetMovementFrame() float64                           { return t.movementFrame }
+func (t *Text) GetPosition() core.Point                             { return t.Position }
+func (t *Text) GetTargetPosition() core.Point                       { return t.TargetPosition }
+func (t *Text) GetSpeed() core.Size                                 { return t.Speed }
+func (t *Text) IsMoving() bool                                      { return t.Moving }
 
 func (t *Text) SetTargetPosition(targetPosition core.Point) {
 	t.TargetPosition = targetPosition

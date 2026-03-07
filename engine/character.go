@@ -4,6 +4,7 @@ import (
 	"math"
 	"time"
 
+	"apodeiktikos.com/fbtest/interfaces"
 	"github.com/ukoelguanche/graphicsengine/core"
 )
 
@@ -18,8 +19,7 @@ type Character struct {
 	Scale                   float64
 	Moving                  bool
 	OnAnimationComplete     func(*Character)
-	OnMovementComplete      func(Renderable)
-	totalDistance           float64
+	OnMovementComplete      func(interfaces.Renderable)
 	movementFrameCount      float64
 	movementFrame           float64
 	easeFunc                func(float64) float64
@@ -55,14 +55,13 @@ func (c *Character) MoveTo(target core.Point, duration time.Duration) {
 	c.Moving = true
 }
 
-func (c *Character) SetOnMovementComplete(f func(Renderable))  { c.OnMovementComplete = f }
-func (c *Character) SetOnAnimationComplete(f func(*Character)) { c.OnAnimationComplete = f }
-func (c *Character) GetEaseFunction() func(float64) float64    { return c.easeFunc }
-func (c *Character) GetMovementFrameCount() float64            { return c.movementFrameCount }
-func (c *Character) GetMovementFrame() float64                 { return c.movementFrame }
-func (c *Character) GetTotalDistance() float64                 { return c.totalDistance }
-func (c *Character) GetPosition() core.Point                   { return c.Position }
-func (c *Character) GetTargetPosition() core.Point             { return c.TargetPosition }
+func (c *Character) SetOnMovementComplete(f func(interfaces.Renderable)) { c.OnMovementComplete = f }
+func (c *Character) SetOnAnimationComplete(f func(*Character))           { c.OnAnimationComplete = f }
+func (c *Character) GetEaseFunction() func(float64) float64              { return c.easeFunc }
+func (c *Character) GetMovementFrameCount() float64                      { return c.movementFrameCount }
+func (c *Character) GetMovementFrame() float64                           { return c.movementFrame }
+func (c *Character) GetPosition() core.Point                             { return c.Position }
+func (c *Character) GetTargetPosition() core.Point                       { return c.TargetPosition }
 
 func (c *Character) GetSpeed() core.Size { return c.Speed }
 func (c *Character) IsMoving() bool      { return c.Moving }
@@ -75,7 +74,6 @@ func (c *Character) SetTargetPosition(targetPosition core.Point) {
 	c.TargetPosition = targetPosition
 
 	c.Moving = true
-	c.totalDistance = math.Sqrt(math.Pow(targetPosition.X-c.Position.X, 2) + math.Pow(targetPosition.Y-c.Position.Y, 2))
 	return
 }
 
@@ -84,7 +82,7 @@ func (c *Character) SetSpeed(absSpeed float64) {
 	dy := c.TargetPosition.Y - c.Position.Y
 	angle := math.Atan2(dy, dx)
 
-	c.movementFrameCount = c.totalDistance / absSpeed
+	//c.movementFrameCount = c.totalDistance / absSpeed
 	c.movementFrame = 0
 
 	c.AbsSpeed = absSpeed
@@ -101,12 +99,12 @@ func (c *Character) EndMovement() {
 	}
 }
 
-func (s *Character) Draw(d Drawer) {
+func (s *Character) Draw(d interfaces.Drawer) {
 	d.DrawSpriteRect(s.Sprite, s.CurrentFrame(), s.Position)
 }
 
 func (s *Character) NextFrame() {
-	UpdatePosition(s)
+	interfaces.UpdatePosition(s)
 
 	// Update Frame
 	s.CurrentSequencePosition += s.SequenceOffset

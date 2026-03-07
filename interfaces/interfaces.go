@@ -1,4 +1,4 @@
-package engine
+package interfaces
 
 import (
 	"time"
@@ -16,20 +16,24 @@ type Renderable interface {
 	NextFrame()
 	GetMovementFrameCount() float64
 	GetMovementFrame() float64
+	// SetOnAnimationComplete(func(Renderable))
 
 	GetSprite() *core.Sprite
+
 	GetPosition() core.Point
-	GetTargetPosition() core.Point
-	GetSpeed() core.Size
 	SetPosition(core.Point)
-	EndMovement()
-	IsMoving() bool
+
+	GetTargetPosition() core.Point
 	SetTargetPosition(core.Point)
-	SetSpeed(float64)
-	GetTotalDistance() float64
-	SetOnMovementComplete(func(Renderable))
-	// SetOnAnimationComplete(func(Renderable))
 	GetStartPosition() core.Point
+
+	GetSpeed() core.Size
+	SetSpeed(float64)
+
+	EndMovement()
+	SetOnMovementComplete(func(Renderable))
+	IsMoving() bool
+
 	GetStartTime() time.Time
 	GetDuration() time.Duration
 

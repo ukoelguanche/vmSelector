@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"apodeiktikos.com/fbtest/engine"
+	"apodeiktikos.com/fbtest/interfaces"
 	"github.com/ukoelguanche/graphicsengine/core"
 )
 
 var clouds []*engine.SpriteInstance
 
-func SetupGreenHillBackground(sprites core.Sprites, renderables []engine.Renderable) []engine.Renderable {
+func SetupGreenHillBackground(sprites core.Sprites, renderables []interfaces.Renderable) []interfaces.Renderable {
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer4", "idle", core.Point{X: 0, Y: 64}))
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", core.Point{X: 0, Y: 112}))
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", core.Point{X: 0, Y: 152}))
@@ -18,7 +19,7 @@ func SetupGreenHillBackground(sprites core.Sprites, renderables []engine.Rendera
 	return renderables
 }
 
-func SetupClouds(sprites core.Sprites, renderables []engine.Renderable) []engine.Renderable {
+func SetupClouds(sprites core.Sprites, renderables []interfaces.Renderable) []interfaces.Renderable {
 	var cloudSprite *engine.SpriteInstance
 	clouds = make([]*engine.SpriteInstance, 0)
 	var y float64 = 0
@@ -37,7 +38,7 @@ func SetupClouds(sprites core.Sprites, renderables []engine.Renderable) []engine
 	return renderables
 }
 
-func SetupGreenHillForeground(sprites core.Sprites, renderables []engine.Renderable) []engine.Renderable {
+func SetupGreenHillForeground(sprites core.Sprites, renderables []interfaces.Renderable) []interfaces.Renderable {
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "Flower1", "idle", core.Point{X: 154, Y: 90}))
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "Flower2", "idle", core.Point{X: -5, Y: 115}))
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "Flower2", "idle", core.Point{X: 220, Y: 115}))
@@ -47,7 +48,7 @@ func SetupGreenHillForeground(sprites core.Sprites, renderables []engine.Rendera
 	return renderables
 }
 
-func OnCloudMovementComplete(sprite engine.Renderable) {
+func OnCloudMovementComplete(sprite interfaces.Renderable) {
 	spritePosition := sprite.GetPosition()
 	sprite.SetPosition(spritePosition.SetX(0))
 	sprite.SetTargetPosition(spritePosition.SetX(-980))

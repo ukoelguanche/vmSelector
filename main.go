@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"apodeiktikos.com/fbtest/engine"
+	"apodeiktikos.com/fbtest/interfaces"
 	"apodeiktikos.com/fbtest/manager"
 	"apodeiktikos.com/fbtest/util"
 	"github.com/ukoelguanche/graphicsengine/core"
@@ -16,7 +17,7 @@ const TARGET_FPS = 25
 const FRAME_DELAY = time.Second / TARGET_FPS
 const SPRITES_FILE = "./assets/sprites/Sprites.json"
 
-var renderables []engine.Renderable
+var renderables []interfaces.Renderable
 
 func Init() {
 	util.LoadContext()
@@ -26,7 +27,7 @@ func Init() {
 	var sprites core.Sprites
 	loaders.LoadSprites(SPRITES_FILE, &sprites)
 
-	renderables = make([]engine.Renderable, 0)
+	renderables = make([]interfaces.Renderable, 0)
 
 	renderables = manager.SetupClouds(sprites, renderables)
 	renderables = manager.SetupGreenHillBackground(sprites, renderables)

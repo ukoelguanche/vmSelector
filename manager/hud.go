@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"apodeiktikos.com/fbtest/engine"
+	"apodeiktikos.com/fbtest/interfaces"
 	"apodeiktikos.com/fbtest/model"
 	"apodeiktikos.com/fbtest/util"
 	"github.com/ukoelguanche/graphicsengine/core"
@@ -19,7 +20,7 @@ var selectedVMIndex = 0
 var texts []*engine.Text
 var menuStatus = "waiting"
 
-func SetupHud(sprites core.Sprites, renderables []engine.Renderable) []engine.Renderable {
+func SetupHud(sprites core.Sprites, renderables []interfaces.Renderable) []interfaces.Renderable {
 	for y := 0; y < 13; y++ {
 		renderables = append(renderables, engine.BuildSpriteInstance(sprites, "ZigZag", "idle", core.Point{X: hudOffset, Y: float64(y * 16)}))
 	}
@@ -101,7 +102,7 @@ func SelectMenuOption() {
 
 }
 
-func OnMovementComplete(renderabe engine.Renderable) {
+func OnMovementComplete(renderabe interfaces.Renderable) {
 	for _, text := range texts {
 		if renderabe == text {
 			text.SetEaseFunction(engine.EaseInOutQuad)
@@ -110,6 +111,6 @@ func OnMovementComplete(renderabe engine.Renderable) {
 	}
 }
 
-func OnRingAnimationComplete(renderable engine.Renderable) {
+func OnRingAnimationComplete(renderable interfaces.Renderable) {
 	ring.SetCurrentSequence(ring.Sprite.Sequences["end"])
 }

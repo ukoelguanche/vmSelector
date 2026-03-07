@@ -4,6 +4,7 @@ import (
 	"math"
 	"time"
 
+	"apodeiktikos.com/fbtest/interfaces"
 	"github.com/ukoelguanche/graphicsengine/core"
 )
 
@@ -17,8 +18,8 @@ type SpriteInstance struct {
 	SequenceLength          int
 	Scale                   float64
 	Moving                  bool
-	OnAnimationComplete     func(Renderable)
-	OnMovementComplete      func(Renderable)
+	OnAnimationComplete     func(interfaces.Renderable)
+	OnMovementComplete      func(interfaces.Renderable)
 	totalDistance           float64
 	movementFrameCount      float64
 	movementFrame           float64
@@ -55,19 +56,20 @@ func (si *SpriteInstance) SetCurrentSequence(sequence []int) {
 	si.CurrentSequencePosition = 0
 }
 
-func (si *SpriteInstance) SetOnAnimationComplete(f func(Renderable)) {
+func (si *SpriteInstance) SetOnAnimationComplete(f func(interfaces.Renderable)) {
 	si.OnAnimationComplete = f
 }
 
-func (si *SpriteInstance) SetOnMovementComplete(f func(Renderable)) { si.OnMovementComplete = f }
-func (si *SpriteInstance) GetEaseFunction() func(float64) float64   { return si.easeFunc }
-func (si *SpriteInstance) GetMovementFrameCount() float64           { return si.movementFrameCount }
-func (si *SpriteInstance) GetMovementFrame() float64                { return si.movementFrame }
-func (si *SpriteInstance) GetTotalDistance() float64                { return si.totalDistance }
-func (si *SpriteInstance) GetPosition() core.Point                  { return si.Position }
-func (si *SpriteInstance) GetTargetPosition() core.Point            { return si.TargetPosition }
-func (si *SpriteInstance) GetSpeed() core.Size                      { return si.Speed }
-func (si *SpriteInstance) IsMoving() bool                           { return si.Moving }
+func (si *SpriteInstance) SetOnMovementComplete(f func(interfaces.Renderable)) {
+	si.OnMovementComplete = f
+}
+func (si *SpriteInstance) GetEaseFunction() func(float64) float64 { return si.easeFunc }
+func (si *SpriteInstance) GetMovementFrameCount() float64         { return si.movementFrameCount }
+func (si *SpriteInstance) GetMovementFrame() float64              { return si.movementFrame }
+func (si *SpriteInstance) GetPosition() core.Point                { return si.Position }
+func (si *SpriteInstance) GetTargetPosition() core.Point          { return si.TargetPosition }
+func (si *SpriteInstance) GetSpeed() core.Size                    { return si.Speed }
+func (si *SpriteInstance) IsMoving() bool                         { return si.Moving }
 
 func (si *SpriteInstance) SetPosition(position core.Point) {
 	si.Position = position
@@ -103,12 +105,12 @@ func (si *SpriteInstance) EndMovement() {
 	}
 }
 
-func (s *SpriteInstance) Draw(d Drawer) {
+func (s *SpriteInstance) Draw(d interfaces.Drawer) {
 	d.DrawSpriteRect(s.Sprite, s.CurrentFrame(), s.Position)
 }
 
 func (s *SpriteInstance) NextFrame() {
-	UpdatePosition(s)
+	interfaces.UpdatePosition(s)
 
 	s.CurrentSequencePosition += s.SequenceOffset
 	if s.CurrentSequencePosition < 1 {

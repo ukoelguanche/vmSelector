@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"apodeiktikos.com/fbtest/engine"
+	"apodeiktikos.com/fbtest/interfaces"
 	"github.com/ukoelguanche/graphicsengine/core"
 )
 
@@ -53,14 +54,14 @@ func SonicStartJump() {
 	sonic.MoveTo(sonic.GetPosition().IncY(-jumpHeight), jumpDuration)
 }
 
-func SonicJump1(engine.Renderable) {
+func SonicJump1(interfaces.Renderable) {
 	sonic.SetOnMovementComplete(SonicJump2)
 	sonic.SetEaseFunction(engine.EaseInQuad)
 	sonic.MoveTo(sonic.GetPosition().IncY(jumpHeight), jumpDuration)
 
 }
 
-func SonicJump2(engine.Renderable) {
+func SonicJump2(interfaces.Renderable) {
 	// End jump
 	jumping = false
 	sonic.SetOnMovementComplete(nil)
