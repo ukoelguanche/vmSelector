@@ -8,6 +8,9 @@ import (
 )
 
 type Character struct {
+	interfaces.BaseMovable
+	interfaces.BaseAnimatable
+
 	Sprite *core.Sprite
 
 	FrameIdx                int
@@ -88,20 +91,10 @@ func (s *Character) Draw(d interfaces.Drawer) {
 	d.DrawSpriteRect(s.Sprite, s.CurrentFrame(), s.Position)
 }
 
-func (s *Character) NextFrame() {
-	interfaces.UpdatePosition(s)
-
+func (c *Character) NextFrame() {
+	c.UpdatePosition(c)
+	c.UpdateFrame(c)
 	// Update Frame
-	s.CurrentSequencePosition += s.SequenceOffset
-	if s.CurrentSequencePosition >= 1 {
-		// ToDo: avoid loop if not needed
-		s.CurrentSequencePosition = 0
-
-		if s.OnAnimationComplete != nil {
-			s.OnAnimationComplete(s)
-		}
-
-	}
 
 }
 
@@ -109,6 +102,24 @@ func (s *Character) CurrentFrame() core.Rect {
 	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
 
 	return s.Sprite.Frames[s.CurrentSequence[frame]]
+}
+
+func (s *Character) GetCurrentSequencePosition() float32 {
+	return s.CurrentSequencePosition
+}
+
+func (s *Character) SetCurrentSequencePosition(currentSequencePosition float32) {
+	s.CurrentSequencePosition = currentSequencePosition
+}
+
+func (s *Character) GetSequenceOffset() float32 {
+	return s.SequenceOffset
+}
+
+func (s *Character) ExecOnAnimationComplete() {
+	if s.OnAnimationComplete != nil {
+		s.OnAnimationComplete(s)
+	}
 }
 
 func BuildCharacter(sprites core.Sprites, name string, sequenceName string, position core.Point) *Character {

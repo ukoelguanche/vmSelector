@@ -9,6 +9,9 @@ import (
 )
 
 type SpriteInstance struct {
+	interfaces.BaseMovable
+	interfaces.BaseAnimatable
+
 	sprite *core.Sprite
 
 	CurrentSequence         []int
@@ -98,23 +101,32 @@ func (s *SpriteInstance) Draw(d interfaces.Drawer) {
 }
 
 func (s *SpriteInstance) NextFrame() {
-	interfaces.UpdatePosition(s)
-
-	s.CurrentSequencePosition += s.SequenceOffset
-	if s.CurrentSequencePosition < 1 {
-		return
-	}
-	s.CurrentSequencePosition = 0
-
-	if s.OnAnimationComplete != nil {
-		s.OnAnimationComplete(s)
-	}
+	s.UpdatePosition(s)
+	s.UpdateFrame(s)
 }
 
 func (s *SpriteInstance) CurrentFrame() core.Rect {
 	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
 
 	return s.sprite.Frames[s.CurrentSequence[frame]]
+}
+
+func (s *SpriteInstance) GetCurrentSequencePosition() float32 {
+	return s.CurrentSequencePosition
+}
+
+func (s *SpriteInstance) SetCurrentSequencePosition(currentSequencePosition float32) {
+	s.CurrentSequencePosition = currentSequencePosition
+}
+
+func (s *SpriteInstance) GetSequenceOffset() float32 {
+	return s.SequenceOffset
+}
+
+func (s *SpriteInstance) ExecOnAnimationComplete() {
+	if s.OnAnimationComplete != nil {
+		s.OnAnimationComplete(s)
+	}
 }
 
 func BuildSpriteInstance(sprites core.Sprites, name string, sequenceName string, position core.Point) *SpriteInstance {

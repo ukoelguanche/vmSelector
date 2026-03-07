@@ -9,6 +9,7 @@ import (
 )
 
 type Text struct {
+	interfaces.BaseMovable
 	Sprite              *core.Sprite
 	Text                string
 	Speed               core.Size
@@ -47,7 +48,7 @@ func (t *Text) Draw(d interfaces.Drawer) {
 	t.NextFrame()
 }
 
-func (t *Text) NextFrame()                      { interfaces.UpdatePosition(t) }
+func (t *Text) NextFrame()                      { t.UpdatePosition(t) }
 func (t *Text) SetPosition(position core.Point) { t.Position = position }
 func (t *Text) GetStartTime() time.Time         { return t.StartTime }
 func (t *Text) GetDuration() time.Duration      { return t.Duration }

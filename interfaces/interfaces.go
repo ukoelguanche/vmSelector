@@ -13,37 +13,57 @@ type Drawer interface {
 type Animatable interface {
 	GetFrame(index int32) core.Rect
 	GetSequences(sequenceName string) []int
+	// SetOnAnimationComplete(func(Renderable))
+	GetCurrentSequencePosition() float32
+	SetCurrentSequencePosition(float32)
+	//IncrementCurrentSequencePosition(float32)
+	GetSequenceOffset() float32
+	GetOnAnimationComplete() func(Animatable)
+	ExecOnAnimationComplete()
 }
 
-type Renderable interface {
+type Drawable interface {
 	Draw(d Drawer)
+}
 
-	NextFrame()
-	// SetOnAnimationComplete(func(Renderable))
+type Easable interface {
+	GetEaseFunction() func(float64) float64
+	SetEaseFunction(func(float64) float64)
+}
 
-	GetSprite() *core.Sprite
+type Movable interface {
+	Easable
+	IsMoving() bool
+
+	GetStartTime() time.Time
+	GetDuration() time.Duration
 
 	GetPosition() core.Point
 	SetPosition(core.Point)
 
 	GetTargetPosition() core.Point
 	SetTargetPosition(core.Point)
-	GetStartPosition() core.Point
 
-	GetSpeed() core.Size
+	GetStartPosition() core.Point
 
 	EndMovement()
 	SetOnMovementComplete(func(Renderable))
-	IsMoving() bool
-
-	GetStartTime() time.Time
-	GetDuration() time.Duration
-
-	GetEaseFunction() func(float64) float64
-	SetEaseFunction(func(float64) float64)
 }
 
-func UpdatePosition(r Renderable) {
+type Renderable interface {
+	Drawable
+	Movable
+
+	NextFrame()
+	GetSprite() *core.Sprite
+	GetSpeed() core.Size
+}
+
+type BaseMovable struct {
+	Movable
+}
+
+func (b *BaseMovable) UpdatePosition(r Movable) {
 	if !r.IsMoving() {
 		return
 	}
@@ -73,4 +93,21 @@ func UpdatePosition(r Renderable) {
 		r.SetPosition(target)
 		r.EndMovement()
 	}
+}
+
+type BaseAnimatable struct {
+	Animatable
+}
+
+func (b *BaseAnimatable) UpdateFrame(a Animatable) {
+	currentSequencePosition := a.GetCurrentSequencePosition()
+	currentSequencePosition += a.GetSequenceOffset()
+
+	if currentSequencePosition >= 1 {
+		currentSequencePosition = 0
+		a.ExecOnAnimationComplete()
+	}
+
+	a.SetCurrentSequencePosition(currentSequencePosition)
+
 }
