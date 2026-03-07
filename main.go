@@ -6,11 +6,10 @@ import (
 
 	"apodeiktikos.com/fbtest/engine"
 	"apodeiktikos.com/fbtest/manager"
+	"apodeiktikos.com/fbtest/util"
 	"github.com/ukoelguanche/graphicsengine/core"
 	"github.com/ukoelguanche/graphicsengine/drivers"
 	"github.com/ukoelguanche/graphicsengine/loaders"
-	//"apodeiktikos.com/fbtest/render"
-	"apodeiktikos.com/fbtest/util"
 )
 
 const TARGET_FPS = 25
@@ -44,21 +43,27 @@ func main() {
 	defer drivers.GlobalDisplay.Clear()
 	defer drivers.GlobalKeyboard.Close()
 
-	for {
-		start := time.Now()
-
-		if handleKeyboardInput() {
-			break
-		}
-
-		Loop()
-
-		elapsed := time.Since(start)
-		//log.Println("Elapsed time: ", elapsed)
-		if elapsed < FRAME_DELAY {
-			time.Sleep(FRAME_DELAY - elapsed)
-		}
+	for Loop() {
 	}
+}
+
+func Loop() bool {
+	start := time.Now()
+
+	drivers.GlobalDisplay.Clear()
+	for _, renderable := range renderables {
+		engine.RenderEntity(renderable)
+		renderable.NextFrame()
+	}
+
+	elapsed := time.Since(start)
+	//log.Println("Elapsed time: ", elapsed)
+	if elapsed < FRAME_DELAY {
+		time.Sleep(FRAME_DELAY - elapsed)
+	}
+
+	drivers.GlobalDisplay.Present()
+	return handleKeyboardInput()
 }
 
 func handleKeyboardInput() bool {
@@ -66,7 +71,7 @@ func handleKeyboardInput() bool {
 	var inc int
 
 	if kbd == drivers.KBD_ESCAPE {
-		return true
+		return false
 	} else if kbd == drivers.KBD_RETURN {
 		manager.SelectMenuOption()
 	} else if kbd == drivers.KBD_SPACE {
@@ -81,14 +86,5 @@ func handleKeyboardInput() bool {
 
 	manager.IncrementVMIndex(inc)
 
-	return false
-}
-
-func Loop() {
-	drivers.GlobalDisplay.Clear()
-	for _, renderable := range renderables {
-		engine.RenderEntity(renderable)
-		renderable.NextFrame()
-	}
-	drivers.GlobalDisplay.Present()
+	return true
 }

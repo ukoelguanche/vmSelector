@@ -6,4 +6,5 @@ import (
 
 func RenderEntity(r Renderable) {
 	r.Draw(drivers.GlobalDisplay)
+
 }
