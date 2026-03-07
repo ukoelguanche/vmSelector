@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"math"
 	"time"
 
 	"apodeiktikos.com/fbtest/interfaces"
@@ -58,8 +57,6 @@ func (c *Character) MoveTo(target core.Point, duration time.Duration) {
 func (c *Character) SetOnMovementComplete(f func(interfaces.Renderable)) { c.OnMovementComplete = f }
 func (c *Character) SetOnAnimationComplete(f func(*Character))           { c.OnAnimationComplete = f }
 func (c *Character) GetEaseFunction() func(float64) float64              { return c.easeFunc }
-func (c *Character) GetMovementFrameCount() float64                      { return c.movementFrameCount }
-func (c *Character) GetMovementFrame() float64                           { return c.movementFrame }
 func (c *Character) GetPosition() core.Point                             { return c.Position }
 func (c *Character) GetTargetPosition() core.Point                       { return c.TargetPosition }
 
@@ -75,18 +72,6 @@ func (c *Character) SetTargetPosition(targetPosition core.Point) {
 
 	c.Moving = true
 	return
-}
-
-func (c *Character) SetSpeed(absSpeed float64) {
-	dx := c.TargetPosition.X - c.Position.X
-	dy := c.TargetPosition.Y - c.Position.Y
-	angle := math.Atan2(dy, dx)
-
-	//c.movementFrameCount = c.totalDistance / absSpeed
-	c.movementFrame = 0
-
-	c.AbsSpeed = absSpeed
-	c.Speed = core.Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
 }
 
 func (c *Character) EndMovement() {

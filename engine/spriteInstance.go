@@ -21,8 +21,6 @@ type SpriteInstance struct {
 	OnAnimationComplete     func(interfaces.Renderable)
 	OnMovementComplete      func(interfaces.Renderable)
 	totalDistance           float64
-	movementFrameCount      float64
-	movementFrame           float64
 	easeFunc                func(float64) float64
 
 	PaletteSwapIndex int
@@ -64,8 +62,6 @@ func (si *SpriteInstance) SetOnMovementComplete(f func(interfaces.Renderable)) {
 	si.OnMovementComplete = f
 }
 func (si *SpriteInstance) GetEaseFunction() func(float64) float64 { return si.easeFunc }
-func (si *SpriteInstance) GetMovementFrameCount() float64         { return si.movementFrameCount }
-func (si *SpriteInstance) GetMovementFrame() float64              { return si.movementFrame }
 func (si *SpriteInstance) GetPosition() core.Point                { return si.Position }
 func (si *SpriteInstance) GetTargetPosition() core.Point          { return si.TargetPosition }
 func (si *SpriteInstance) GetSpeed() core.Size                    { return si.Speed }
@@ -81,18 +77,6 @@ func (si *SpriteInstance) SetTargetPosition(targetPosition core.Point) {
 	si.Moving = true
 	si.totalDistance = math.Sqrt(math.Pow(targetPosition.X-si.Position.X, 2) + math.Pow(targetPosition.Y-si.Position.Y, 2))
 	return
-}
-
-func (si *SpriteInstance) SetSpeed(absSpeed float64) {
-	dx := si.TargetPosition.X - si.Position.X
-	dy := si.TargetPosition.Y - si.Position.Y
-	angle := math.Atan2(dy, dx)
-
-	si.movementFrameCount = si.totalDistance / absSpeed
-	si.movementFrame = 0
-
-	si.AbsSpeed = absSpeed
-	si.Speed = core.Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
 }
 
 func (si *SpriteInstance) EndMovement() {

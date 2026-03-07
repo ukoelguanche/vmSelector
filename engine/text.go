@@ -13,7 +13,6 @@ type Text struct {
 	Text                string
 	Speed               core.Size
 	AbsSpeed            float64
-	movementFrameCount  float64
 	movementFrame       float64
 	Moving              bool
 	OnMovementComplete  func(interfaces.Renderable)
@@ -63,8 +62,6 @@ func (si *Text) MoveTo(target core.Point, duration time.Duration) {
 func (t *Text) SetOnMovementComplete(f func(interfaces.Renderable)) { t.OnMovementComplete = f }
 func (t *Text) SetEaseFunction(f func(float64) float64)             { t.easeFunc = f }
 func (t *Text) GetEaseFunction() func(float64) float64              { return t.easeFunc }
-func (t *Text) GetMovementFrameCount() float64                      { return t.movementFrameCount }
-func (t *Text) GetMovementFrame() float64                           { return t.movementFrame }
 func (t *Text) GetPosition() core.Point                             { return t.Position }
 func (t *Text) GetTargetPosition() core.Point                       { return t.TargetPosition }
 func (t *Text) GetSpeed() core.Size                                 { return t.Speed }
@@ -75,18 +72,6 @@ func (t *Text) SetTargetPosition(targetPosition core.Point) {
 	t.Moving = true
 	t.totalDistance = math.Sqrt(math.Pow(targetPosition.X-t.Position.X, 2) + math.Pow(targetPosition.Y-t.Position.Y, 2))
 	t.easeFunc = EeaseLinear
-}
-
-func (t *Text) SetSpeed(absSpeed float64) {
-	dx := t.TargetPosition.X - t.Position.X
-	dy := t.TargetPosition.Y - t.Position.Y
-	angle := math.Atan2(dy, dx)
-
-	t.movementFrameCount = t.totalDistance / absSpeed
-	t.movementFrame = 0
-
-	t.AbsSpeed = absSpeed
-	t.Speed = core.Size{W: absSpeed * math.Cos(angle), H: absSpeed * math.Sin(angle)}
 }
 
 func (t *Text) EndMovement() {

@@ -14,8 +14,6 @@ type Renderable interface {
 	Draw(d Drawer)
 
 	NextFrame()
-	GetMovementFrameCount() float64
-	GetMovementFrame() float64
 	// SetOnAnimationComplete(func(Renderable))
 
 	GetSprite() *core.Sprite
@@ -28,7 +26,6 @@ type Renderable interface {
 	GetStartPosition() core.Point
 
 	GetSpeed() core.Size
-	SetSpeed(float64)
 
 	EndMovement()
 	SetOnMovementComplete(func(Renderable))
