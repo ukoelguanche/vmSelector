@@ -88,6 +88,17 @@ func SelectMenuOption() {
 		text.MoveTo(text.Position, time.Duration(ci*100)*time.Millisecond)
 		ci++
 	}
+
+	ring.CurrentSequence = ring.Sprite.Sequences["fade"]
+}
+
+func OnMovementComplete(sprite engine.Renderable) {
+	for _, text := range texts {
+		if sprite == text {
+			text.SetEaseFunction(engine.EaseInOutQuad)
+			text.MoveTo(core.Point{X: 350, Y: text.Position.Y}, 1000*time.Millisecond)
+		}
+	}
 }
 
 func OnRingAnimationComplete(sprite *engine.SpriteInstance) {
@@ -95,17 +106,8 @@ func OnRingAnimationComplete(sprite *engine.SpriteInstance) {
 		fadeSeq := ring.Sprite.Sequences["fade"]
 		if &ring.CurrentSequence[0] == &fadeSeq[0] {
 			ring.CurrentSequence = ring.Sprite.Sequences["end"]
-			model.SwitchToVM(centinelVM, vms[selectedVMIndex])
+			//model.SwitchToVM(centinelVM, vms[selectedVMIndex])
 		}
 
-	}
-}
-
-func OnMovementComplete(sprite engine.Renderable) {
-	for _, text := range texts {
-		if sprite == text {
-			text.SetEaseFunction(engine.EaseInOutQuad)
-			text.MoveTo(core.Point{X: 320, Y: text.Position.Y}, 300*time.Millisecond)
-		}
 	}
 }
