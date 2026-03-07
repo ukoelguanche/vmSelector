@@ -45,7 +45,7 @@ func GetVMs() *VMList {
 func GetVMByName(hostname string) *VM {
 	pveRes := GetVMs()
 	if pveRes == nil {
-
+		return nil
 	}
 	for _, vm := range pveRes.Data {
 		if vm.Name == hostname {

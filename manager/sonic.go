@@ -8,7 +8,7 @@ import (
 	"github.com/ukoelguanche/graphicsengine/core"
 )
 
-var sonic *engine.SpriteInstance
+var sonic *engine.Character
 var lastIdleTime time.Time = time.Now()
 var boredInterval time.Duration = 3
 var boredAnimations = []string{"stare", "RaiseEyebrows", "FootTap"}
@@ -16,14 +16,14 @@ var jumping = false
 var jumpHeight float64 = 70
 var jumpDuration = 350 * time.Millisecond
 
-func SetupSonic(sprites core.Sprites) *engine.SpriteInstance {
-	sonic = engine.BuildSpriteInstance(sprites, "Sonic", "idle", core.Point{X: 39, Y: 132})
-	sonic.OnAnimationComplete = SonicIdleComplete
+func SetupSonic(sprites core.Sprites) *engine.Character {
+	sonic = engine.BuildCharacter(sprites, "Sonic", "idle", core.Point{X: 39, Y: 132})
+	sonic.SetOnAnimationComplete(SonicIdleComplete)
 
 	return sonic
 }
 
-func SonicIdleComplete(*engine.SpriteInstance) {
+func SonicIdleComplete(sonic *engine.Character) {
 	if time.Since(lastIdleTime) < boredInterval*time.Second {
 		return
 	}
@@ -31,14 +31,14 @@ func SonicIdleComplete(*engine.SpriteInstance) {
 	selectedAnim := boredAnimations[rand.Intn(len(boredAnimations))]
 
 	sonic.CurrentSequence = sonic.Sprite.Sequences[selectedAnim]
-	sonic.OnAnimationComplete = SonicBoredCompleted
+	sonic.SetOnAnimationComplete(SonicBoredCompleted)
 
 }
 
-func SonicBoredCompleted(*engine.SpriteInstance) {
+func SonicBoredCompleted(sonic *engine.Character) {
 	lastIdleTime = time.Now()
 	sonic.CurrentSequence = sonic.Sprite.Sequences["idle"]
-	sonic.OnAnimationComplete = SonicIdleComplete
+	sonic.SetOnAnimationComplete(SonicIdleComplete)
 }
 
 func SonicStartJump() {

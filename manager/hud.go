@@ -17,6 +17,7 @@ var centinelVM *model.VM
 var vms []model.VM
 var selectedVMIndex = 0
 var texts []*engine.Text
+var menuStatus = "waiting"
 
 func SetupHud(sprites core.Sprites, renderables []engine.Renderable) []engine.Renderable {
 	for y := 0; y < 13; y++ {
@@ -25,10 +26,11 @@ func SetupHud(sprites core.Sprites, renderables []engine.Renderable) []engine.Re
 
 	texts = SetupHUDTexts(sprites, hudOffset)
 	for _, t := range texts {
-		renderables = append(renderables, t) // Aquí 't' se convierte a Renderable automáticamente
+		renderables = append(renderables, t)
 	}
 
-	renderables = append(renderables, SetupRing(sprites)) // Aquí 't' se convierte a Renderable automáticamente
+	ring = engine.BuildSpriteInstance(sprites, "Ring", "idle", core.Point{X: hudOffset + 20, Y: 56})
+	renderables = append(renderables, ring)
 
 	return renderables
 }
@@ -78,6 +80,14 @@ func IncrementVMIndex(value int) {
 }
 
 func SelectMenuOption() {
+	if menuStatus != "waiting" {
+		return
+	}
+	menuStatus = "ending"
+
+	ring.SetCurrentSequence(ring.Sprite.Sequences["fade"])
+	ring.OnAnimationComplete = OnRingAnimationComplete
+
 	ci := 0
 	for i, text := range texts[:len(texts)-1] {
 		if i == selectedVMIndex || i == len(texts)-1 {
@@ -89,25 +99,17 @@ func SelectMenuOption() {
 		ci++
 	}
 
-	ring.CurrentSequence = ring.Sprite.Sequences["fade"]
 }
 
-func OnMovementComplete(sprite engine.Renderable) {
+func OnMovementComplete(renderabe engine.Renderable) {
 	for _, text := range texts {
-		if sprite == text {
+		if renderabe == text {
 			text.SetEaseFunction(engine.EaseInOutQuad)
 			text.MoveTo(core.Point{X: 350, Y: text.Position.Y}, 1000*time.Millisecond)
 		}
 	}
 }
 
-func OnRingAnimationComplete(sprite *engine.SpriteInstance) {
-	if sprite == ring {
-		fadeSeq := ring.Sprite.Sequences["fade"]
-		if &ring.CurrentSequence[0] == &fadeSeq[0] {
-			ring.CurrentSequence = ring.Sprite.Sequences["end"]
-			//model.SwitchToVM(centinelVM, vms[selectedVMIndex])
-		}
-
-	}
+func OnRingAnimationComplete(renderable engine.Renderable) {
+	ring.SetCurrentSequence(ring.Sprite.Sequences["end"])
 }

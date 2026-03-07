@@ -17,7 +17,7 @@ type SpriteInstance struct {
 	SequenceLength          int
 	Scale                   float64
 	Moving                  bool
-	OnAnimationComplete     func(*SpriteInstance)
+	OnAnimationComplete     func(Renderable)
 	OnMovementComplete      func(Renderable)
 	totalDistance           float64
 	movementFrameCount      float64
@@ -49,6 +49,14 @@ func (si *SpriteInstance) MoveTo(target core.Point, duration time.Duration) {
 	si.StartTime = time.Now()
 	si.Duration = duration
 	si.Moving = true
+}
+func (si *SpriteInstance) SetCurrentSequence(sequence []int) {
+	si.CurrentSequence = sequence
+	si.CurrentSequencePosition = 0
+}
+
+func (si *SpriteInstance) SetOnAnimationComplete(f func(Renderable)) {
+	si.OnAnimationComplete = f
 }
 
 func (si *SpriteInstance) SetOnMovementComplete(f func(Renderable)) { si.OnMovementComplete = f }
@@ -102,18 +110,15 @@ func (s *SpriteInstance) Draw(d Drawer) {
 func (s *SpriteInstance) NextFrame() {
 	UpdatePosition(s)
 
-	// Update Frame
 	s.CurrentSequencePosition += s.SequenceOffset
-	if s.CurrentSequencePosition >= 1 {
-		// ToDo: avoid loop if not needed
-		s.CurrentSequencePosition = 0
-
-		if s.OnAnimationComplete != nil {
-			s.OnAnimationComplete(s)
-		}
-
+	if s.CurrentSequencePosition < 1 {
+		return
 	}
+	s.CurrentSequencePosition = 0
 
+	if s.OnAnimationComplete != nil {
+		s.OnAnimationComplete(s)
+	}
 }
 
 func (s *SpriteInstance) CurrentFrame() core.Rect {

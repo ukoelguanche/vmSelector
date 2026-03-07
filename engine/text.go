@@ -8,16 +8,17 @@ import (
 )
 
 type Text struct {
-	Sprite             *core.Sprite
-	Text               string
-	Speed              core.Size
-	AbsSpeed           float64
-	movementFrameCount float64
-	movementFrame      float64
-	Moving             bool
-	OnMovementComplete func(Renderable)
-	easeFunc           func(float64) float64
-	totalDistance      float64
+	Sprite              *core.Sprite
+	Text                string
+	Speed               core.Size
+	AbsSpeed            float64
+	movementFrameCount  float64
+	movementFrame       float64
+	Moving              bool
+	OnMovementComplete  func(Renderable)
+	OnAnimationComplete func(Renderable)
+	easeFunc            func(float64) float64
+	totalDistance       float64
 
 	// Movement
 	Position       core.Point
