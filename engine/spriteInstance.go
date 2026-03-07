@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"apodeiktikos.com/fbtest/core"
+	"github.com/ukoelguanche/graphicsengine/core"
 )
 
 type SpriteInstance struct {

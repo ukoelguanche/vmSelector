@@ -3,10 +3,10 @@ package manager
 import (
 	"time"
 
-	"apodeiktikos.com/fbtest/core"
 	"apodeiktikos.com/fbtest/engine"
 	"apodeiktikos.com/fbtest/model"
 	"apodeiktikos.com/fbtest/util"
+	"github.com/ukoelguanche/graphicsengine/core"
 )
 
 const hudOffset float64 = 175
@@ -84,7 +84,7 @@ func SelectMenuOption() {
 			continue
 		}
 		text.OnMovementComplete = OnMovementComplete
-		text.SetEaseFunction(util.EaseInOutQuad)
+		text.SetEaseFunction(engine.EaseInOutQuad)
 		text.MoveTo(text.Position, time.Duration(ci*100)*time.Millisecond)
 		ci++
 	}
@@ -104,7 +104,7 @@ func OnRingAnimationComplete(sprite *engine.SpriteInstance) {
 func OnMovementComplete(sprite engine.Renderable) {
 	for _, text := range texts {
 		if sprite == text {
-			text.SetEaseFunction(util.EaseInOutQuad)
+			text.SetEaseFunction(engine.EaseInOutQuad)
 			text.MoveTo(core.Point{X: 320, Y: text.Position.Y}, 300*time.Millisecond)
 		}
 	}

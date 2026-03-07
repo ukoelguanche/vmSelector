@@ -1,4 +1,6 @@
+main
 fbtest
 *.tgz
-.DS_Store
+.DS_Store?
+*.DS_Store
 .env

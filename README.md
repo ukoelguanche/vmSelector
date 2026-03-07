@@ -1,7 +1,7 @@
 # Compile for alpine
 
 ```shell
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o fbtest .
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o main .
 ```
 
 # Upload resources
@@ -40,4 +40,5 @@ cat /dev/urandom > /dev/fb0
 ```
 
 
-
+Skip library intermediates:
+GOPRIVATE=github.com/ukoelguanche/graphicsengine go get github.com/ukoelguanche/graphicsengine@v0.1.3

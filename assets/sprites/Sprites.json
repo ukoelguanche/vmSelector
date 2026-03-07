@@ -1,9 +1,9 @@
 {
   "BitmapSources": {
-    "hud": "./resources/sprites/HUD.png",
-    "sonic": "./resources/sprites/Sonic.png",
-    "greenHill": "./resources/sprites/GreenHill.png",
-    "GreenHillBack": "./resources/sprites/GreenHillBack.png"
+    "hud": "./assets/sprites/HUD.png",
+    "sonic": "./assets/sprites/Sonic.png",
+    "greenHill": "./assets/sprites/GreenHill.png",
+    "GreenHillBack": "./assets/sprites/GreenHillBack.png"
   },
   "Sprites": {
     "GreenHillBackgroundLayer1": {

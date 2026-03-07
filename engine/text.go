@@ -4,8 +4,7 @@ import (
 	"math"
 	"time"
 
-	"apodeiktikos.com/fbtest/core"
-	"apodeiktikos.com/fbtest/util"
+	"github.com/ukoelguanche/graphicsengine/core"
 )
 
 type Text struct {
@@ -74,7 +73,7 @@ func (t *Text) SetTargetPosition(targetPosition core.Point) {
 	t.TargetPosition = targetPosition
 	t.Moving = true
 	t.totalDistance = math.Sqrt(math.Pow(targetPosition.X-t.Position.X, 2) + math.Pow(targetPosition.Y-t.Position.Y, 2))
-	t.easeFunc = util.EeaseLinear
+	t.easeFunc = EeaseLinear
 }
 
 func (t *Text) SetSpeed(absSpeed float64) {

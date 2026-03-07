@@ -3,7 +3,7 @@ package engine
 import (
 	"time"
 
-	"apodeiktikos.com/fbtest/core"
+	"github.com/ukoelguanche/graphicsengine/core"
 )
 
 type Drawer interface {

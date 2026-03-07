@@ -4,9 +4,8 @@ import (
 	"math/rand"
 	"time"
 
-	"apodeiktikos.com/fbtest/core"
 	"apodeiktikos.com/fbtest/engine"
-	"apodeiktikos.com/fbtest/util"
+	"github.com/ukoelguanche/graphicsengine/core"
 )
 
 var sonic *engine.SpriteInstance
@@ -49,14 +48,14 @@ func SonicStartJump() {
 	jumping = true
 	sonic.OnAnimationComplete = nil
 	sonic.CurrentSequence = sonic.Sprite.Sequences["jump"]
-	sonic.SetEaseFunction(util.EaseOutQuad)
+	sonic.SetEaseFunction(engine.EaseOutQuad)
 	sonic.OnMovementComplete = SonicJump1
 	sonic.MoveTo(sonic.GetPosition().IncY(-jumpHeight), jumpDuration)
 }
 
 func SonicJump1(engine.Renderable) {
 	sonic.SetOnMovementComplete(SonicJump2)
-	sonic.SetEaseFunction(util.EaseInQuad)
+	sonic.SetEaseFunction(engine.EaseInQuad)
 	sonic.MoveTo(sonic.GetPosition().IncY(jumpHeight), jumpDuration)
 
 }

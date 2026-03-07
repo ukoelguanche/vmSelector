@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"apodeiktikos.com/fbtest/core"
 	"apodeiktikos.com/fbtest/engine"
+	"github.com/ukoelguanche/graphicsengine/core"
 )
 
 var clouds []*engine.SpriteInstance

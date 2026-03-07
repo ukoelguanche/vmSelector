@@ -4,17 +4,18 @@ import (
 	_ "image/png"
 	"time"
 
-	"apodeiktikos.com/fbtest/core"
-	"apodeiktikos.com/fbtest/drivers"
 	"apodeiktikos.com/fbtest/engine"
-	"apodeiktikos.com/fbtest/loaders"
 	"apodeiktikos.com/fbtest/manager"
-	"apodeiktikos.com/fbtest/render"
+	"github.com/ukoelguanche/graphicsengine/core"
+	"github.com/ukoelguanche/graphicsengine/drivers"
+	"github.com/ukoelguanche/graphicsengine/loaders"
+	//"apodeiktikos.com/fbtest/render"
 	"apodeiktikos.com/fbtest/util"
 )
 
-const targetFPS = 25
-const frameDelay = time.Second / targetFPS
+const TARGET_FPS = 25
+const FRAME_DELAY = time.Second / TARGET_FPS
+const SPRITES_FILE = "./assets/sprites/Sprites.json"
 
 var renderables []engine.Renderable
 
@@ -24,7 +25,7 @@ func Init() {
 	drivers.GlobalKeyboard = drivers.InitKeyboard()
 
 	var sprites core.Sprites
-	loaders.LoadSprites("./resources/sprites/Sprites.json", &sprites)
+	loaders.LoadSprites(SPRITES_FILE, &sprites)
 
 	renderables = make([]engine.Renderable, 0)
 
@@ -54,8 +55,8 @@ func main() {
 
 		elapsed := time.Since(start)
 		//log.Println("Elapsed time: ", elapsed)
-		if elapsed < frameDelay {
-			time.Sleep(frameDelay - elapsed)
+		if elapsed < FRAME_DELAY {
+			time.Sleep(FRAME_DELAY - elapsed)
 		}
 	}
 }
@@ -86,7 +87,7 @@ func handleKeyboardInput() bool {
 func Loop() {
 	drivers.GlobalDisplay.Clear()
 	for _, renderable := range renderables {
-		render.RenderEntity(renderable)
+		engine.RenderEntity(renderable)
 		renderable.NextFrame()
 	}
 	drivers.GlobalDisplay.Present()
