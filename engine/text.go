@@ -9,7 +9,7 @@ import (
 )
 
 type Text struct {
-	interfaces.BaseMovable
+	BaseMovable
 	Sprite              *core.Sprite
 	Text                string
 	Speed               core.Size

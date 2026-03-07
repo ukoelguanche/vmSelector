@@ -8,8 +8,8 @@ import (
 )
 
 type Character struct {
-	interfaces.BaseMovable
-	interfaces.BaseAnimatable
+	BaseMovable
+	BaseAnimatable
 
 	Sprite *core.Sprite
 

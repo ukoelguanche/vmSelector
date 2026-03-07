@@ -9,8 +9,8 @@ import (
 )
 
 type SpriteInstance struct {
-	interfaces.BaseMovable
-	interfaces.BaseAnimatable
+	BaseMovable
+	BaseAnimatable
 
 	sprite *core.Sprite
 
