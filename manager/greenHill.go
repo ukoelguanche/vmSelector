@@ -26,7 +26,7 @@ func SetupClouds(sprites core.Sprites, renderables []interfaces.Renderable) []in
 	for i := 0; i < 3; i++ {
 		cloudSprite = engine.BuildSpriteInstance(sprites, fmt.Sprintf("GreenHillBackgroundLayer%d", i+1), "idle", core.Point{X: 0, Y: float64(y)})
 
-		cloudSprite.MoveTo(cloudSprite.Position.SetX(-980), time.Duration(90000+i*10000)*time.Millisecond)
+		cloudSprite.MoveTo(cloudSprite.GetPosition().SetX(-980), time.Duration(90000+i*10000)*time.Millisecond)
 
 		cloudSprite.SetOnMovementComplete(OnCloudMovementComplete)
 		renderables = append(renderables, cloudSprite)

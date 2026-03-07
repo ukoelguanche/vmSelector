@@ -14,27 +14,24 @@ type SpriteInstance struct {
 
 	sprite *core.Sprite
 
-	CurrentSequence         []int
+	currentSequence         []int
 	SequenceOffset          float32
-	CurrentSequencePosition float32
-	SequenceLength          int
-	Scale                   float64
-	Moving                  bool
-	OnAnimationComplete     func(interfaces.Renderable)
-	OnMovementComplete      func(interfaces.Renderable)
+	currentSequencePosition float32
+	moving                  bool
+	onAnimationComplete     func(interfaces.Renderable)
+	onMovementComplete      func(interfaces.Renderable)
 	totalDistance           float64
 	easeFunc                func(float64) float64
 
-	PaletteSwapIndex int
-	Speed            core.Size
+	paletteSwapIndex int
+	speed            core.Size
 	AbsSpeed         float64
 
-	Position       core.Point
-	StartPosition  core.Point
-	TargetPosition core.Point
+	position       core.Point
+	startPosition  core.Point
+	targetPosition core.Point
 	StartTime      time.Time
-	Duration       time.Duration
-	TotalDistance  float64
+	duration       time.Duration
 }
 
 func (si *SpriteInstance) GetSprite() *core.Sprite {
@@ -42,32 +39,32 @@ func (si *SpriteInstance) GetSprite() *core.Sprite {
 }
 func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
 func (si *SpriteInstance) GetStartTime() time.Time                 { return si.StartTime }
-func (si *SpriteInstance) GetDuration() time.Duration              { return si.Duration }
-func (si *SpriteInstance) GetStartPosition() core.Point            { return si.StartPosition }
+func (si *SpriteInstance) GetDuration() time.Duration              { return si.duration }
+func (si *SpriteInstance) GetStartPosition() core.Point            { return si.startPosition }
 func (si *SpriteInstance) MoveTo(target core.Point, duration time.Duration) {
-	si.StartPosition = si.Position
-	si.TargetPosition = target
+	si.startPosition = si.position
+	si.targetPosition = target
 	si.StartTime = time.Now()
-	si.Duration = duration
-	si.Moving = true
+	si.duration = duration
+	si.moving = true
 }
 func (si *SpriteInstance) SetCurrentSequence(sequence []int) {
-	si.CurrentSequence = sequence
-	si.CurrentSequencePosition = 0
+	si.currentSequence = sequence
+	si.currentSequencePosition = 0
 }
 
 func (si *SpriteInstance) SetOnAnimationComplete(f func(interfaces.Renderable)) {
-	si.OnAnimationComplete = f
+	si.onAnimationComplete = f
 }
 
 func (si *SpriteInstance) SetOnMovementComplete(f func(interfaces.Renderable)) {
-	si.OnMovementComplete = f
+	si.onMovementComplete = f
 }
 func (si *SpriteInstance) GetEaseFunction() func(float64) float64 { return si.easeFunc }
-func (si *SpriteInstance) GetPosition() core.Point                { return si.Position }
-func (si *SpriteInstance) GetTargetPosition() core.Point          { return si.TargetPosition }
-func (si *SpriteInstance) GetSpeed() core.Size                    { return si.Speed }
-func (si *SpriteInstance) IsMoving() bool                         { return si.Moving }
+func (si *SpriteInstance) GetPosition() core.Point                { return si.position }
+func (si *SpriteInstance) GetTargetPosition() core.Point          { return si.targetPosition }
+func (si *SpriteInstance) GetSpeed() core.Size                    { return si.speed }
+func (si *SpriteInstance) IsMoving() bool                         { return si.moving }
 
 func (si *SpriteInstance) GetFrame(index int32) core.Rect { return si.sprite.Frames[index] }
 func (si *SpriteInstance) GetSequences(sequenceName string) []int {
@@ -75,29 +72,29 @@ func (si *SpriteInstance) GetSequences(sequenceName string) []int {
 }
 
 func (si *SpriteInstance) SetPosition(position core.Point) {
-	si.Position = position
+	si.position = position
 }
 func (si *SpriteInstance) SetTargetPosition(targetPosition core.Point) {
 
-	si.TargetPosition = targetPosition
+	si.targetPosition = targetPosition
 
-	si.Moving = true
-	si.totalDistance = math.Sqrt(math.Pow(targetPosition.X-si.Position.X, 2) + math.Pow(targetPosition.Y-si.Position.Y, 2))
+	si.moving = true
+	si.totalDistance = math.Sqrt(math.Pow(targetPosition.X-si.position.X, 2) + math.Pow(targetPosition.Y-si.position.Y, 2))
 	return
 }
 
 func (si *SpriteInstance) EndMovement() {
-	if !si.Moving {
+	if !si.moving {
 		return
 	}
-	si.Moving = false
-	if si.OnMovementComplete != nil {
-		si.OnMovementComplete(si)
+	si.moving = false
+	if si.onMovementComplete != nil {
+		si.onMovementComplete(si)
 	}
 }
 
 func (s *SpriteInstance) Draw(d interfaces.Drawer) {
-	d.DrawSpriteRect(s.sprite, s.CurrentFrame(), s.Position)
+	d.DrawSpriteRect(s.sprite, s.CurrentFrame(), s.position)
 }
 
 func (s *SpriteInstance) NextFrame() {
@@ -106,17 +103,17 @@ func (s *SpriteInstance) NextFrame() {
 }
 
 func (s *SpriteInstance) CurrentFrame() core.Rect {
-	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
+	frame := int(float32(len(s.currentSequence)) * s.currentSequencePosition)
 
-	return s.sprite.Frames[s.CurrentSequence[frame]]
+	return s.sprite.Frames[s.currentSequence[frame]]
 }
 
 func (s *SpriteInstance) GetCurrentSequencePosition() float32 {
-	return s.CurrentSequencePosition
+	return s.currentSequencePosition
 }
 
 func (s *SpriteInstance) SetCurrentSequencePosition(currentSequencePosition float32) {
-	s.CurrentSequencePosition = currentSequencePosition
+	s.currentSequencePosition = currentSequencePosition
 }
 
 func (s *SpriteInstance) GetSequenceOffset() float32 {
@@ -124,8 +121,8 @@ func (s *SpriteInstance) GetSequenceOffset() float32 {
 }
 
 func (s *SpriteInstance) ExecOnAnimationComplete() {
-	if s.OnAnimationComplete != nil {
-		s.OnAnimationComplete(s)
+	if s.onAnimationComplete != nil {
+		s.onAnimationComplete(s)
 	}
 }
 
@@ -134,13 +131,12 @@ func BuildSpriteInstance(sprites core.Sprites, name string, sequenceName string,
 	relativeSeqenceSpeed := float32(0.5)
 	spriteInstance := &SpriteInstance{
 		sprite:                  sprites.Sprites[name],
-		Position:                position,
-		TargetPosition:          position,
-		CurrentSequence:         sequence,
+		position:                position,
+		targetPosition:          position,
+		currentSequence:         sequence,
 		SequenceOffset:          1 / float32(len(sequence)) * relativeSeqenceSpeed,
-		CurrentSequencePosition: 0.0,
-		SequenceLength:          len(sequence),
-		Moving:                  false,
+		currentSequencePosition: 0.0,
+		moving:                  false,
 	}
 
 	return spriteInstance

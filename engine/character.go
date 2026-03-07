@@ -17,9 +17,7 @@ type Character struct {
 	CurrentSequence         []int
 	SequenceOffset          float32
 	CurrentSequencePosition float32
-	SequenceLength          int
-	Scale                   float64
-	Moving                  bool
+	moving                  bool
 	OnAnimationComplete     func(*Character)
 	OnMovementComplete      func(interfaces.Renderable)
 	movementFrameCount      float64
@@ -54,7 +52,7 @@ func (c *Character) MoveTo(target core.Point, duration time.Duration) {
 	c.TargetPosition = target
 	c.StartTime = time.Now()
 	c.Duration = duration
-	c.Moving = true
+	c.moving = true
 }
 
 func (c *Character) SetOnMovementComplete(f func(interfaces.Renderable)) { c.OnMovementComplete = f }
@@ -64,7 +62,7 @@ func (c *Character) GetPosition() core.Point                             { retur
 func (c *Character) GetTargetPosition() core.Point                       { return c.TargetPosition }
 
 func (c *Character) GetSpeed() core.Size { return c.Speed }
-func (c *Character) IsMoving() bool      { return c.Moving }
+func (c *Character) IsMoving() bool      { return c.moving }
 
 func (c *Character) SetPosition(position core.Point) {
 	c.Position = position
@@ -73,15 +71,15 @@ func (c *Character) SetTargetPosition(targetPosition core.Point) {
 
 	c.TargetPosition = targetPosition
 
-	c.Moving = true
+	c.moving = true
 	return
 }
 
 func (c *Character) EndMovement() {
-	if !c.Moving {
+	if !c.moving {
 		return
 	}
-	c.Moving = false
+	c.moving = false
 	if c.OnMovementComplete != nil {
 		c.OnMovementComplete(c)
 	}
@@ -134,8 +132,7 @@ func BuildCharacter(sprites core.Sprites, name string, sequenceName string, posi
 		CurrentSequence:         sequence,
 		SequenceOffset:          1 / float32(len(sequence)) * relativeSeqenceSpeed,
 		CurrentSequencePosition: 0.0,
-		SequenceLength:          len(sequence),
-		Moving:                  false,
+		moving:                  false,
 	}
 
 	return spriteInstance
