@@ -10,6 +10,11 @@ type Drawer interface {
 	DrawSpriteRect(sprite *core.Sprite, rect core.Rect, position core.Point)
 }
 
+type Animatable interface {
+	GetFrame(index int32) core.Rect
+	GetSequences(sequenceName string) []int
+}
+
 type Renderable interface {
 	Draw(d Drawer)
 

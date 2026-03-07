@@ -50,7 +50,7 @@ func SonicStartJump() {
 	sonic.OnAnimationComplete = nil
 	sonic.CurrentSequence = sonic.Sprite.Sequences["jump"]
 	sonic.SetEaseFunction(engine.EaseOutQuad)
-	sonic.OnMovementComplete = SonicJump1
+	sonic.SetOnMovementComplete(SonicJump1)
 	sonic.MoveTo(sonic.GetPosition().IncY(-jumpHeight), jumpDuration)
 }
 

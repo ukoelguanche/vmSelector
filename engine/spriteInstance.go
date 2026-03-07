@@ -9,9 +9,8 @@ import (
 )
 
 type SpriteInstance struct {
-	Sprite *core.Sprite
+	sprite *core.Sprite
 
-	FrameIdx                int
 	CurrentSequence         []int
 	SequenceOffset          float32
 	CurrentSequencePosition float32
@@ -36,7 +35,7 @@ type SpriteInstance struct {
 }
 
 func (si *SpriteInstance) GetSprite() *core.Sprite {
-	return si.Sprite
+	return si.sprite
 }
 func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
 func (si *SpriteInstance) GetStartTime() time.Time                 { return si.StartTime }
@@ -67,6 +66,11 @@ func (si *SpriteInstance) GetTargetPosition() core.Point          { return si.Ta
 func (si *SpriteInstance) GetSpeed() core.Size                    { return si.Speed }
 func (si *SpriteInstance) IsMoving() bool                         { return si.Moving }
 
+func (si *SpriteInstance) GetFrame(index int32) core.Rect { return si.sprite.Frames[index] }
+func (si *SpriteInstance) GetSequences(sequenceName string) []int {
+	return si.sprite.Sequences[sequenceName]
+}
+
 func (si *SpriteInstance) SetPosition(position core.Point) {
 	si.Position = position
 }
@@ -90,7 +94,7 @@ func (si *SpriteInstance) EndMovement() {
 }
 
 func (s *SpriteInstance) Draw(d interfaces.Drawer) {
-	d.DrawSpriteRect(s.Sprite, s.CurrentFrame(), s.Position)
+	d.DrawSpriteRect(s.sprite, s.CurrentFrame(), s.Position)
 }
 
 func (s *SpriteInstance) NextFrame() {
@@ -110,18 +114,16 @@ func (s *SpriteInstance) NextFrame() {
 func (s *SpriteInstance) CurrentFrame() core.Rect {
 	frame := int(float32(len(s.CurrentSequence)) * s.CurrentSequencePosition)
 
-	return s.Sprite.Frames[s.CurrentSequence[frame]]
+	return s.sprite.Frames[s.CurrentSequence[frame]]
 }
 
 func BuildSpriteInstance(sprites core.Sprites, name string, sequenceName string, position core.Point) *SpriteInstance {
 	sequence := sprites.Sprites[name].Sequences[sequenceName]
 	relativeSeqenceSpeed := float32(0.5)
-	//relativePaletteSwapSpeed := float32(0.07)
 	spriteInstance := &SpriteInstance{
-		Sprite:                  sprites.Sprites[name],
+		sprite:                  sprites.Sprites[name],
 		Position:                position,
 		TargetPosition:          position,
-		FrameIdx:                0,
 		CurrentSequence:         sequence,
 		SequenceOffset:          1 / float32(len(sequence)) * relativeSeqenceSpeed,
 		CurrentSequencePosition: 0.0,

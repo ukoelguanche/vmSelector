@@ -28,9 +28,9 @@ func SetupClouds(sprites core.Sprites, renderables []interfaces.Renderable) []in
 
 		cloudSprite.MoveTo(cloudSprite.Position.SetX(-980), time.Duration(90000+i*10000)*time.Millisecond)
 
-		cloudSprite.OnMovementComplete = OnCloudMovementComplete
+		cloudSprite.SetOnMovementComplete(OnCloudMovementComplete)
 		renderables = append(renderables, cloudSprite)
-		y += cloudSprite.Sprite.Frames[0].Size.H
+		y += cloudSprite.GetFrame(0).Size.H
 
 		clouds = append(clouds, cloudSprite)
 	}

@@ -77,7 +77,7 @@ func IncrementVMIndex(value int) {
 	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+42), transitionDuaration)
 
 	ring.MoveTo(ring.Position.SetY(texts[selectedVMIndex].Position.Y-4), transitionDuaration)
-	ring.OnMovementComplete = OnMovementComplete
+	ring.SetOnMovementComplete(OnMovementComplete)
 }
 
 func SelectMenuOption() {
@@ -86,7 +86,7 @@ func SelectMenuOption() {
 	}
 	menuStatus = "ending"
 
-	ring.SetCurrentSequence(ring.Sprite.Sequences["fade"])
+	ring.SetCurrentSequence(ring.GetSequences("fade"))
 	ring.OnAnimationComplete = OnRingAnimationComplete
 
 	ci := 0
@@ -94,7 +94,7 @@ func SelectMenuOption() {
 		if i == selectedVMIndex || i == len(texts)-1 {
 			continue
 		}
-		text.OnMovementComplete = OnMovementComplete
+		text.SetOnMovementComplete(OnMovementComplete)
 		text.SetEaseFunction(engine.EaseInOutQuad)
 		text.MoveTo(text.Position, time.Duration(ci*100)*time.Millisecond)
 		ci++
@@ -112,5 +112,5 @@ func OnMovementComplete(renderabe interfaces.Renderable) {
 }
 
 func OnRingAnimationComplete(renderable interfaces.Renderable) {
-	ring.SetCurrentSequence(ring.Sprite.Sequences["end"])
+	ring.SetCurrentSequence(ring.GetSequences("end"))
 }
