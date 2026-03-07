@@ -29,6 +29,6 @@ func EaseInQuad(t float64) float64 {
 }
 
 func EaseOutCubic(t float64) float64 {
-	t-- // Decrementamos t primero
+	t--
 	return t*t*t + 1
 }

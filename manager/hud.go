@@ -31,6 +31,7 @@ func SetupHud(sprites core.Sprites, renderables []interfaces.Renderable) []inter
 	}
 
 	ring = engine.BuildSpriteInstance(sprites, "Ring", "idle", core.Point{X: hudOffset + 20, Y: 56})
+	ring.SetEaseFunction(engine.EaseInQuad)
 	renderables = append(renderables, ring)
 
 	return renderables
@@ -71,7 +72,7 @@ func IncrementVMIndex(value int) {
 		return
 	}
 
-	const transitionDuaration = 200 * time.Millisecond
+	const transitionDuaration = 100 * time.Millisecond
 	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+30), transitionDuaration)
 	selectedVMIndex = max(0, min(len(vms)-1, selectedVMIndex+value))
 	texts[selectedVMIndex].MoveTo(texts[selectedVMIndex].Position.SetX(hudOffset+42), transitionDuaration)
