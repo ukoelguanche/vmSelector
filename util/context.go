@@ -3,6 +3,8 @@ package util
 import (
 	"log"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type Context struct {
@@ -18,6 +20,11 @@ type Context struct {
 var ContextStorage = &Context{}
 
 func LoadContext() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error cargando el archivo .env")
+	}
+
 	pollInterval, err := strconv.Atoi(Getenv("POLL_INTERVAL"))
 	if err != nil {
 		log.Fatal("Could not parse POLL_INTERVAL value: %s\n", Getenv("POLL_INTERVAL"))

@@ -40,7 +40,6 @@ func (c *Character) NextFrame() {
 func BuildCharacter(sprites core.Sprites, name string, sequenceName string, position core.Point) *Character {
 	sequence := sprites.Sprites[name].Sequences[sequenceName]
 	relativeSeqenceSpeed := float32(0.5)
-	//relativePaletteSwapSpeed := float32(0.07)
 	character := &Character{
 		BaseAnimatable: BaseAnimatable{
 			sprite:                  sprites.Sprites[name],

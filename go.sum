@@ -1,3 +1,5 @@
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/ukoelguanche/graphicsengine v0.1.2 h1:sQEL4hotGXrdBdRwHbhV3s8TJxmaQXZLCA7LjGuSQHs=
 github.com/ukoelguanche/graphicsengine v0.1.2/go.mod h1:CDxM7A7W2NbYR2fBXHSEEj4J4PLS2w6fxTAyz9vGzkM=
 github.com/ukoelguanche/graphicsengine v0.1.3 h1:B6dCdwiDugFYEGoFUqad0JCEa6pNJFufBF8QvohGopI=

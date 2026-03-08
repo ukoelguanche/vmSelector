@@ -6,10 +6,10 @@ GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o main .
 
 # Upload resources
 ```shell
-scp fbtest root@10.0.10.19:fbtest
-tar czf resources.tgz resources
-scp resources.tgz root@10.0.10.19:resources.tgz
-ssh  root@10.0.10.19 tar -xzf resources.tgz 
+scp main root@10.0.10.19:main
+tar czf assets.tgz assets
+scp assets.tgz root@10.0.10.19:assets.tgz
+ssh  root@10.0.10.19 tar -xzf assets.tgz 
 ````
 
 
