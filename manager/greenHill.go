@@ -30,7 +30,7 @@ func SetupClouds(sprites core.Sprites, renderables []interfaces.Renderable) []in
 
 		cloudSprite.SetOnMovementComplete(OnCloudMovementComplete)
 		renderables = append(renderables, cloudSprite)
-		y += cloudSprite.GetFrame(0).Size.H
+		y += cloudSprite.GetSprite().GetFrame(0).Size.H
 
 		clouds = append(clouds, cloudSprite)
 	}
@@ -48,7 +48,7 @@ func SetupGreenHillForeground(sprites core.Sprites, renderables []interfaces.Ren
 	return renderables
 }
 
-func OnCloudMovementComplete(sprite interfaces.Renderable) {
+func OnCloudMovementComplete(sprite interfaces.Movable) {
 	spritePosition := sprite.GetPosition()
 	sprite.SetPosition(spritePosition.SetX(0))
 	sprite.SetTargetPosition(spritePosition.SetX(-980))

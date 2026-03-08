@@ -103,7 +103,7 @@ func SelectMenuOption() {
 
 }
 
-func OnMovementComplete(renderabe interfaces.Renderable) {
+func OnMovementComplete(renderabe interfaces.Movable) {
 	for _, text := range texts {
 		if renderabe == text {
 			text.SetEaseFunction(engine.EaseInOutQuad)
@@ -112,6 +112,6 @@ func OnMovementComplete(renderabe interfaces.Renderable) {
 	}
 }
 
-func OnRingAnimationComplete(renderable interfaces.Renderable) {
+func OnRingAnimationComplete(renderable interfaces.Animatable) {
 	ring.SetCurrentSequence(ring.GetSequences("end"))
 }

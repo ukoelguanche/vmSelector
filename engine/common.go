@@ -7,5 +7,4 @@ import (
 
 func RenderEntity(r interfaces.Renderable) {
 	r.Draw(drivers.GlobalDisplay)
-
 }

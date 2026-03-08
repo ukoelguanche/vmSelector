@@ -7,19 +7,27 @@ import (
 )
 
 type Drawer interface {
-	DrawSpriteRect(sprite *core.Sprite, rect core.Rect, position core.Point)
+	DrawSpriteRect(sprite *core.Sprite, rect core.Frame, position core.Point)
 }
 
 type Animatable interface {
-	GetFrame(index int32) core.Rect
+	GetSprite() *core.Sprite
 	GetSequences(sequenceName string) []int
+
+	GetFrame(index int32) core.Frame
+	GetCurrentFrame() core.Frame
+	GetCurrentSequence() []int
+
 	// SetOnAnimationComplete(func(Renderable))
 	GetCurrentSequencePosition() float32
 	SetCurrentSequencePosition(float32)
 	//IncrementCurrentSequencePosition(float32)
 	GetSequenceOffset() float32
 	GetOnAnimationComplete() func(Animatable)
+	SetOnAnimationComplete(f func(Animatable))
 	ExecOnAnimationComplete()
+	SetCurrentSequence([]int)
+	//GetSprite() *core.Sprite
 }
 
 type Drawable interface {
@@ -33,7 +41,10 @@ type Easable interface {
 
 type Movable interface {
 	Easable
+
 	IsMoving() bool
+
+	GetSpeed() core.Size
 
 	GetStartTime() time.Time
 	GetDuration() time.Duration
@@ -47,7 +58,7 @@ type Movable interface {
 	GetStartPosition() core.Point
 
 	EndMovement()
-	SetOnMovementComplete(func(Renderable))
+	SetOnMovementComplete(func(Movable))
 }
 
 type Renderable interface {
@@ -56,5 +67,4 @@ type Renderable interface {
 
 	NextFrame()
 	GetSprite() *core.Sprite
-	GetSpeed() core.Size
 }

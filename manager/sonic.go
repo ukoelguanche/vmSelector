@@ -24,21 +24,20 @@ func SetupSonic(sprites core.Sprites) *engine.Character {
 	return sonic
 }
 
-func SonicIdleComplete(sonic *engine.Character) {
+func SonicIdleComplete(animatable interfaces.Animatable) {
 	if time.Since(lastIdleTime) < boredInterval*time.Second {
 		return
 	}
 
 	selectedAnim := boredAnimations[rand.Intn(len(boredAnimations))]
 
-	sonic.CurrentSequence = sonic.Sprite.Sequences[selectedAnim]
-	sonic.SetOnAnimationComplete(SonicBoredCompleted)
-
+	engine.SetCurrentSequenceByName(sonic, selectedAnim)
+	animatable.SetOnAnimationComplete(SonicBoredCompleted)
 }
 
-func SonicBoredCompleted(sonic *engine.Character) {
+func SonicBoredCompleted(sonic interfaces.Animatable) {
 	lastIdleTime = time.Now()
-	sonic.CurrentSequence = sonic.Sprite.Sequences["idle"]
+	engine.SetCurrentSequenceByName(sonic, "idle")
 	sonic.SetOnAnimationComplete(SonicIdleComplete)
 }
 
@@ -47,26 +46,26 @@ func SonicStartJump() {
 		return
 	}
 	jumping = true
-	sonic.OnAnimationComplete = nil
-	sonic.CurrentSequence = sonic.Sprite.Sequences["jump"]
+	sonic.SetOnAnimationComplete(nil)
+	engine.SetCurrentSequenceByName(sonic, "jump")
 	sonic.SetEaseFunction(engine.EaseOutQuad)
 	sonic.SetOnMovementComplete(SonicJump1)
 	sonic.MoveTo(sonic.GetPosition().IncY(-jumpHeight), jumpDuration)
 }
 
-func SonicJump1(interfaces.Renderable) {
+func SonicJump1(movable interfaces.Movable) {
 	sonic.SetOnMovementComplete(SonicJump2)
 	sonic.SetEaseFunction(engine.EaseInQuad)
 	sonic.MoveTo(sonic.GetPosition().IncY(jumpHeight), jumpDuration)
 
 }
 
-func SonicJump2(interfaces.Renderable) {
+func SonicJump2(saa interfaces.Movable) {
 	// End jump
 	jumping = false
 	sonic.SetOnMovementComplete(nil)
 	// Back to idle
 	lastIdleTime = time.Now()
-	sonic.CurrentSequence = sonic.Sprite.Sequences["idle"]
-	sonic.OnAnimationComplete = SonicIdleComplete
+	engine.SetCurrentSequenceByName(sonic, "idle")
+	sonic.SetOnAnimationComplete(SonicIdleComplete)
 }
