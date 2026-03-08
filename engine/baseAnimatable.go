@@ -20,10 +20,6 @@ type BaseAnimatable struct {
 func (b *BaseAnimatable) GetSprite() *core.Sprite        { return b.sprite }
 func (b *BaseAnimatable) GetSequences(name string) []int { return b.sprite.Sequences[name] }
 
-func (b *BaseAnimatable) GetCurrentFrame() core.Frame {
-	return b.sprite.Frames[b.frameIdx]
-}
-
 func (b *BaseAnimatable) GetCurrentSequence() []int { return b.currentSequence }
 func (s *BaseAnimatable) GetCurrentSequencePosition() float32 {
 	return s.currentSequencePosition
@@ -46,6 +42,12 @@ func (s *BaseAnimatable) ExecOnAnimationComplete() {
 func (si *BaseAnimatable) SetCurrentSequence(sequence []int) {
 	si.currentSequence = sequence
 	si.currentSequencePosition = 0
+}
+
+func (b *BaseAnimatable) GetCurrentFrame() core.Frame {
+	frame := int(float32(len(b.currentSequence)) * b.currentSequencePosition)
+
+	return b.sprite.Frames[b.currentSequence[frame]]
 }
 
 func (b *BaseAnimatable) UpdateFrame(a interfaces.Animatable) {

@@ -18,40 +18,14 @@ type Character struct {
 }
 
 func (c *Character) SetEaseFunction(f func(float64) float64) { c.easeFunc = f }
+func (c *Character) GetEaseFunction() func(float64) float64  { return c.easeFunc }
+
 func (c *BaseMovable) MoveTo(target core.Point, duration time.Duration) {
 	c.startPosition = c.position
 	c.targetPosition = target
 	c.startTime = time.Now()
 	c.duration = duration
 	c.moving = true
-}
-
-func (c *Character) GetEaseFunction() func(float64) float64 { return c.easeFunc }
-func (c *Character) GetPosition() core.Point                { return c.position }
-func (c *Character) GetTargetPosition() core.Point          { return c.targetPosition }
-
-func (c *Character) GetSpeed() core.Size { return c.Speed }
-func (c *Character) IsMoving() bool      { return c.moving }
-
-func (c *Character) SetPosition(position core.Point) {
-	c.position = position
-}
-func (c *Character) SetTargetPosition(targetPosition core.Point) {
-
-	c.targetPosition = targetPosition
-
-	c.moving = true
-	return
-}
-
-func (c *Character) EndMovement() {
-	if !c.moving {
-		return
-	}
-	c.moving = false
-	if c.onMovementComplete != nil {
-		c.onMovementComplete(c)
-	}
 }
 
 func (s *Character) Draw(d interfaces.Drawer) {

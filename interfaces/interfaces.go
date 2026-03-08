@@ -14,7 +14,7 @@ type Animatable interface {
 	GetSprite() *core.Sprite
 	GetSequences(sequenceName string) []int
 
-	GetFrame(index int32) core.Frame
+	// GetFrame(index int32) core.Frame
 	GetCurrentFrame() core.Frame
 	GetCurrentSequence() []int
 

@@ -17,10 +17,12 @@ type SpriteInstance struct {
 	AbsSpeed         float64
 }
 
+func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
+func (si *SpriteInstance) GetEaseFunction() func(float64) float64  { return si.easeFunc }
+
 func (si *SpriteInstance) GetSprite() *core.Sprite {
 	return si.sprite
 }
-func (si *SpriteInstance) SetEaseFunction(f func(float64) float64) { si.easeFunc = f }
 
 func (si *SpriteInstance) MoveTo(target core.Point, duration time.Duration) {
 	si.startPosition = si.position
@@ -30,21 +32,13 @@ func (si *SpriteInstance) MoveTo(target core.Point, duration time.Duration) {
 	si.moving = true
 }
 
-func (si *SpriteInstance) GetEaseFunction() func(float64) float64 { return si.easeFunc }
-
 func (s *SpriteInstance) Draw(d interfaces.Drawer) {
-	d.DrawSpriteRect(s.sprite, s.CurrentFrame(), s.position)
+	d.DrawSpriteRect(s.GetSprite(), s.GetCurrentFrame(), s.position)
 }
 
 func (s *SpriteInstance) NextFrame() {
 	s.UpdatePosition(s)
-	//s.UpdateFrame(s)
-}
-
-func (s *SpriteInstance) CurrentFrame() core.Frame {
-	frame := int(float32(len(s.currentSequence)) * s.currentSequencePosition)
-
-	return s.sprite.Frames[s.currentSequence[frame]]
+	s.UpdateFrame(s)
 }
 
 func BuildSpriteInstance(sprites core.Sprites, name string, sequenceName string, position core.Point) *SpriteInstance {
