@@ -10,6 +10,7 @@ scp main root@10.0.10.19:main
 tar czf assets.tgz assets
 scp assets.tgz root@10.0.10.19:assets.tgz
 ssh  root@10.0.10.19 tar -xzf assets.tgz 
+ssh  root@10.0.10.19 rm assets.tgz 
 ````
 
 
