@@ -37,7 +37,7 @@ func SetupHud(sprites core.Sprites, renderables []interfaces.Renderable) []inter
 		renderables = append(renderables, t)
 	}
 
-	ring = engine.BuildSpriteInstance(sprites, "Ring", "idle", core.Point{X: hudOffset + 20, Y: verticalCenter})
+	ring = engine.BuildSpriteInstance(sprites, "Ring", "idle", core.Point{X: hudOffset + 28, Y: verticalCenter})
 	ring.SetEaseFunction(engine.EaseInQuad)
 	renderables = append(renderables, ring)
 
