@@ -22,7 +22,7 @@ var renderables []interfaces.Renderable
 func Init() {
 	util.LoadContext()
 	drivers.GlobalDisplay = drivers.InitDisplay("VM Selector", drivers.VW, drivers.VH)
-	drivers.GlobalKeyboard = drivers.InitKeyboard()
+	drivers.InitKeyboard()
 
 	var sprites core.Sprites
 	loaders.LoadSprites(SPRITES_FILE, &sprites)
