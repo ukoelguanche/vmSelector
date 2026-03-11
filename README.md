@@ -10,12 +10,12 @@ scp main root@10.0.10.19:main
 tar czf assets.tgz assets
 scp assets.tgz root@10.0.10.19:assets.tgz
 ssh  root@10.0.10.19 tar -xzf assets.tgz 
-ssh  root@10.0.10.19 rm assets.tgz 
+ssh  root@10.0.10.19 rm assets.tgz
 ````
 
 
-# Alpine setup
-Edit GRUB, update an reboot
+# Setup to run in Alpine Linux
+Edit GRUB, update and reboot
 ```shell
 vi /etc/default/grub
 
@@ -30,16 +30,9 @@ grub-mkconfig -o /boot/grub/grub.cfg
 reboot
 ```
 
-Enable fb output
+
+edit /etc/inittab and add the following line to run the program on tty1
+
 ```shell
-echo 0 > /sys/class/vtconsole/vtcon1/bind
+tty1::respawn:/bin/sh -c "cd /root && exec ./main"
 ```
-
-Test with noise 
-```shell
-cat /dev/urandom > /dev/fb0
-```
-
-
-Skip library intermediates:
-GOPRIVATE=github.com/ukoelguanche/graphicsengine go get github.com/ukoelguanche/graphicsengine@v0.1.3
