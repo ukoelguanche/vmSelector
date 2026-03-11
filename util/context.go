@@ -2,7 +2,6 @@ package util
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -10,7 +9,6 @@ import (
 type Context struct {
 	GpuString     string
 	CentineVMName string
-	PollInterval  int
 	Port          string
 	PveHosst      string
 	PveTokenId    string
@@ -22,16 +20,9 @@ var ContextStorage = &Context{}
 func LoadContext() {
 	godotenv.Load()
 
-	pollInterval, err := strconv.Atoi(Getenv("POLL_INTERVAL"))
-	if err != nil {
-		log.Fatal("Could not parse POLL_INTERVAL value: %s\n", Getenv("POLL_INTERVAL"))
-	}
-
 	ContextStorage = &Context{
-
 		Getenv("GPU_STRING"),
 		Getenv("CENTINEL_VM_NAME"),
-		pollInterval,
 		Getenv("PORT"),
 		Getenv("PVE_HOST"),
 		Getenv("PVE_TOKEN_ID"),
