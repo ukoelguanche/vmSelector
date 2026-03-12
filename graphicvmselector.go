@@ -30,11 +30,19 @@ func Init() {
 	renderables = make([]interfaces.Renderable, 0)
 
 	renderables = manager.SetupClouds(sprites, renderables)
-	renderables = manager.SetupGreenHillBackground(sprites, renderables)
+	backgroundRenderables := manager.SetupGreenHillBackground(sprites, renderables)
+	renderables = append(renderables, backgroundRenderables...)
 	renderables = manager.SetupGreenHillForeground(sprites, renderables)
 
 	renderables = append(renderables, manager.SetupSonic(sprites))
 	renderables = manager.SetupHud(sprites, renderables)
+
+	drivers.PixelColorProcessors = append(drivers.PixelColorProcessors, &engine.PaletteSwapColorProcessor{
+		SourcePalette: sprites.Palettes["WaterSource"],
+		TargetPalette: sprites.Palettes["WaterTarget"],
+		Sprite:        backgroundRenderables[4].GetSprite(),
+	})
+
 }
 
 func main() {
