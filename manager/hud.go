@@ -123,6 +123,15 @@ func OnMovementComplete(renderabe interfaces.Movable) {
 }
 
 func OnRingAnimationComplete(renderable interfaces.Animatable) {
+	ring.SetOnAnimationComplete(VMSelected)
 	ring.SetCurrentSequence(ring.GetSequences("end"))
 	model.SwitchToVM(centinelVM, vms[selectedVMIndex])
+}
+
+func VMSelected(renderable interfaces.Animatable) {
+	myTransformer := &engine.FadeToBlack{
+		StartTime: time.Now(),
+		Duration:  1000 * time.Millisecond,
+	}
+	drivers.GlobalDisplay.AddTransformer(myTransformer)
 }

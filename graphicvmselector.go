@@ -37,12 +37,11 @@ func Init() {
 	renderables = append(renderables, manager.SetupSonic(sprites))
 	renderables = manager.SetupHud(sprites, renderables)
 
-	drivers.PixelColorProcessors = append(drivers.PixelColorProcessors, &engine.PaletteSwapColorProcessor{
+	drivers.SpriteColorProcessors = append(drivers.SpriteColorProcessors, &engine.PaletteSwapColorProcessor{
 		SourcePalette: sprites.Palettes["WaterSource"],
 		TargetPalette: sprites.Palettes["WaterTarget"],
 		Sprite:        backgroundRenderables[4].GetSprite(),
 	})
-
 }
 
 func main() {

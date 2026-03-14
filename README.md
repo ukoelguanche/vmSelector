@@ -6,7 +6,7 @@ GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o main .
 
 # Upload resources
 ```shell
-scp main root@10.0.10.19:main
+scp main diabasis:main
 tar czf assets.tgz assets
 scp assets.tgz root@10.0.10.19:assets.tgz
 ssh  root@10.0.10.19 tar -xzf assets.tgz 
