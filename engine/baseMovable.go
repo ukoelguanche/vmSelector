@@ -51,12 +51,16 @@ func (b *BaseMovable) SetTargetPosition(targetPosition core.Point) {
 }
 
 func (b *BaseMovable) EndMovement() {
+	b.completeMovement(b)
+}
+
+func (b *BaseMovable) completeMovement(movable interfaces.Movable) {
 	if !b.moving {
 		return
 	}
 	b.moving = false
 	if b.onMovementComplete != nil {
-		b.onMovementComplete(b)
+		b.onMovementComplete(movable)
 	}
 }
 
@@ -92,6 +96,6 @@ func (b *BaseMovable) UpdatePosition(r interfaces.Movable) {
 
 	if t >= 1.0 {
 		r.SetPosition(target)
-		r.EndMovement()
+		b.completeMovement(r)
 	}
 }
