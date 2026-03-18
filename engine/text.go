@@ -44,8 +44,6 @@ func (t *Text) Draw(d interfaces.Drawer) {
 		d.DrawSpriteRect(t.Sprite, rect, core.Point{X: cursorX, Y: t.Position.Y})
 		cursorX += rect.Size.W + 1
 	}
-
-	t.NextFrame()
 }
 
 func (t *Text) NextFrame()                      { t.UpdatePosition(t) }

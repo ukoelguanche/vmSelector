@@ -57,10 +57,13 @@ func main() {
 func Loop() bool {
 	start := time.Now()
 
+	for _, renderable := range renderables {
+		renderable.NextFrame()
+	}
+
 	drivers.GlobalDisplay.Clear()
 	for _, renderable := range renderables {
 		engine.RenderEntity(renderable)
-		renderable.NextFrame()
 	}
 
 	elapsed := time.Since(start)
