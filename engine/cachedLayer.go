@@ -27,6 +27,7 @@ func (l *CachedLayer) Draw(d interfaces.Drawer) {
 }
 
 func (l *CachedLayer) Update() {}
+func (l *CachedLayer) IsStatic() bool { return true }
 
 func BuildCachedLayer(name string, draws []CachedSpriteDraw) *CachedLayer {
 	bitmap := &core.Bitmap{

@@ -18,6 +18,7 @@ const FRAME_DELAY = time.Second / TARGET_FPS
 const SPRITES_FILE = "./assets/sprites/Sprites.json"
 
 var renderables []interfaces.Renderable
+var dynamicRenderables []interfaces.Renderable
 
 func Init() {
 	util.LoadContext()
@@ -35,6 +36,8 @@ func Init() {
 
 	renderables = append(renderables, manager.SetupSonic(sprites))
 	renderables = manager.SetupHud(sprites, renderables)
+
+	setupStaticBaseFrame()
 }
 
 func main() {
@@ -51,12 +54,14 @@ func main() {
 func Loop() bool {
 	start := time.Now()
 
-	for _, renderable := range renderables {
+	for _, renderable := range dynamicRenderables {
 		renderable.Update()
 	}
 
-	drivers.GlobalDisplay.Clear()
-	for _, renderable := range renderables {
+	if !drivers.GlobalDisplay.RestoreBaseBuffer() {
+		drivers.GlobalDisplay.Clear()
+	}
+	for _, renderable := range dynamicRenderables {
 		engine.RenderEntity(renderable)
 	}
 
@@ -91,4 +96,21 @@ func handleKeyboardInput() bool {
 	manager.IncrementVMIndex(inc)
 
 	return true
+}
+
+func setupStaticBaseFrame() {
+	dynamicRenderables = make([]interfaces.Renderable, 0, len(renderables))
+
+	drivers.GlobalDisplay.Clear()
+	for _, renderable := range renderables {
+		staticRenderable, ok := renderable.(interfaces.StaticRenderable)
+		if ok && staticRenderable.IsStatic() {
+			engine.RenderEntity(renderable)
+			continue
+		}
+
+		dynamicRenderables = append(dynamicRenderables, renderable)
+	}
+
+	drivers.GlobalDisplay.SaveBaseBuffer()
 }

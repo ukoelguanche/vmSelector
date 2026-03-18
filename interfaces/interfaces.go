@@ -68,3 +68,8 @@ type Renderable interface {
 	Update()
 	GetSprite() *core.Sprite
 }
+
+type StaticRenderable interface {
+	Renderable
+	IsStatic() bool
+}
