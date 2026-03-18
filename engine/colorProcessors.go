@@ -13,6 +13,10 @@ type PaletteSwapColorProcessor struct {
 	Sprite        *core.Sprite
 }
 
+func (p *PaletteSwapColorProcessor) AppliesTo(sprite *core.Sprite) bool {
+	return sprite == p.Sprite
+}
+
 func (p *PaletteSwapColorProcessor) ProcessColor(color []byte) []byte {
 	i := p.Sprite.CurrentSwapPaletteIndex()
 	return p.SourcePalette.ReplacePalette(color, p.TargetPalette, i)
