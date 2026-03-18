@@ -58,7 +58,7 @@ func Loop() bool {
 	start := time.Now()
 
 	for _, renderable := range renderables {
-		renderable.NextFrame()
+		renderable.Update()
 	}
 
 	drivers.GlobalDisplay.Clear()

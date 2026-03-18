@@ -46,7 +46,7 @@ func (t *Text) Draw(d interfaces.Drawer) {
 	}
 }
 
-func (t *Text) NextFrame()                      { t.UpdatePosition(t) }
+func (t *Text) Update()                         { t.UpdatePosition(t) }
 func (t *Text) SetPosition(position core.Point) { t.Position = position }
 func (t *Text) GetStartTime() time.Time         { return t.StartTime }
 func (t *Text) GetDuration() time.Duration      { return t.Duration }

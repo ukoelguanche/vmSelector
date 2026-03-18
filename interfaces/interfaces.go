@@ -65,6 +65,6 @@ type Renderable interface {
 	Drawable
 	Movable
 
-	NextFrame()
+	Update()
 	GetSprite() *core.Sprite
 }

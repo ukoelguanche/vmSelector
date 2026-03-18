@@ -36,7 +36,7 @@ func (s *SpriteInstance) Draw(d interfaces.Drawer) {
 	d.DrawSpriteRect(s.GetSprite(), s.GetCurrentFrame(), s.position)
 }
 
-func (s *SpriteInstance) NextFrame() {
+func (s *SpriteInstance) Update() {
 	s.UpdatePosition(s)
 	s.UpdateFrame(s)
 }

@@ -32,7 +32,7 @@ func (s *Character) Draw(d interfaces.Drawer) {
 	d.DrawSpriteRect(s.GetSprite(), s.GetCurrentFrame(), s.position)
 }
 
-func (c *Character) NextFrame() {
+func (c *Character) Update() {
 	c.UpdatePosition(c)
 	c.UpdateFrame(c)
 }
