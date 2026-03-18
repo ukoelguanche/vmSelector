@@ -362,6 +362,17 @@
       "Sequences": {
         "idle":  [0]
       }
+    },
+    "Keyboard": {
+      "BitmapSource": "hud",
+      "Frames": [
+        {"Point": {"X": 0, "Y": 0}, "Size": {"W": 0, "H": 0}},
+        {"Point": {"X": 212, "Y": 147}, "Size": {"W": 66, "H": 49}}
+      ],
+      "Sequences": {
+        "idle":  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "blink":  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      }
     }
   },
   "Palettes": {

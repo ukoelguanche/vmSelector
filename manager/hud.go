@@ -14,6 +14,7 @@ import (
 const hudOffset float64 = 95
 
 var ring *engine.SpriteInstance
+var keyboardIcon *engine.SpriteInstance
 var gpuString string
 var centinelVM *model.VM
 var vms []model.VM
@@ -40,6 +41,11 @@ func SetupHud(sprites core.Sprites, renderables []interfaces.Renderable) []inter
 	ring = engine.BuildSpriteInstance(sprites, "Ring", "idle", core.Point{X: hudOffset + 28, Y: verticalCenter})
 	ring.SetEaseFunction(engine.EaseInQuad)
 	renderables = append(renderables, ring)
+
+	keyboardIcon = engine.BuildSpriteInstance(sprites, "Keyboard", "idle", core.Point{X: drivers.VW/2 - 30, Y: drivers.VH/2 - 23})
+	renderables = append(renderables, keyboardIcon)
+
+	drivers.GlobalKeyboard.EventsHandler = KeyboardEventsHandler{}
 
 	return renderables
 }
@@ -125,13 +131,18 @@ func OnMovementComplete(renderabe interfaces.Movable) {
 func OnRingAnimationComplete(renderable interfaces.Animatable) {
 	ring.SetOnAnimationComplete(VMSelected)
 	ring.SetCurrentSequence(ring.GetSequences("end"))
+	devMode := util.ContextStorage.DevMode
+	if devMode == "true" {
+		return
+	}
 	model.SwitchToVM(centinelVM, vms[selectedVMIndex])
 }
 
 func VMSelected(renderable interfaces.Animatable) {
-	myTransformer := &engine.FadeToBlack{
+	myTransformer := &engine.PixelFade{
+		GridSize:  8,
 		StartTime: time.Now(),
-		Duration:  1000 * time.Millisecond,
+		Duration:  700 * time.Millisecond,
 	}
 	drivers.GlobalDisplay.AddTransformer(myTransformer)
 }

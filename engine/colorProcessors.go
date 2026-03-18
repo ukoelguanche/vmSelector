@@ -60,3 +60,40 @@ func (ftb *FadeToBlack) Transform(pixels []byte) {
 		pixels[i+2] = uint8(float32(pixels[i+2]) * nextY)
 	}
 }
+
+type PixelFade struct {
+	drivers.PixelTransformer
+	StartTime time.Time
+	Duration  time.Duration
+	GridSize  int
+}
+
+func (pf *PixelFade) Transform(pixels []byte) {
+	elapsed := time.Since(pf.StartTime)
+	duration := pf.Duration
+
+	t := elapsed.Seconds() / duration.Seconds()
+
+	if t > 1.0 {
+		t = 1.0
+	}
+
+	start := 0.0
+	target := float64(pf.GridSize) * 2
+
+	step := int(float32(start + (target-start)*t))
+
+	for i := 0; i < drivers.VH; i++ { // 0 to 200: rows
+		for j := 0; j < drivers.VW; j++ { // 0 to 320*4: columns (4 bytes per pixel)
+			ii := i % pf.GridSize
+			jj := j % pf.GridSize
+
+			if jj <= step-ii {
+				pixelPos := (i*drivers.VW + j) * 4
+				pixels[pixelPos] = 0
+				pixels[pixelPos+1] = 0
+				pixels[pixelPos+2] = 0
+			}
+		}
+	}
+}

@@ -7,6 +7,7 @@ import (
 )
 
 type Context struct {
+	DevMode       string
 	GpuString     string
 	CentineVMName string
 	Port          string
@@ -21,6 +22,7 @@ func LoadContext() {
 	godotenv.Load()
 
 	ContextStorage = &Context{
+		GetEnvOrDefault("DEV_MODE", "false"),
 		Getenv("GPU_STRING"),
 		Getenv("CENTINEL_VM_NAME"),
 		Getenv("PORT"),
