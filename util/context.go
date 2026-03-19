@@ -8,6 +8,7 @@ import (
 
 type Context struct {
 	DevMode       string
+	StressSprites int
 	GpuString     string
 	CentineVMName string
 	Port          string
@@ -23,6 +24,7 @@ func LoadContext() {
 
 	ContextStorage = &Context{
 		GetEnvOrDefault("DEV_MODE", "false"),
+		GetEnvIntOrDefault("STRESS_SPRITES", 0),
 		Getenv("GPU_STRING"),
 		Getenv("CENTINEL_VM_NAME"),
 		Getenv("PORT"),

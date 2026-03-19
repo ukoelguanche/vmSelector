@@ -14,7 +14,8 @@ type CachedSpriteDraw struct {
 
 type CachedLayer struct {
 	BaseMovable
-	sprite *core.Sprite
+	sprite   *core.Sprite
+	isStatic bool
 	easeFunc func(float64) float64
 }
 
@@ -27,9 +28,9 @@ func (l *CachedLayer) Draw(d interfaces.Drawer) {
 }
 
 func (l *CachedLayer) Update() {}
-func (l *CachedLayer) IsStatic() bool { return true }
+func (l *CachedLayer) IsStatic() bool { return l.isStatic }
 
-func BuildCachedLayer(name string, draws []CachedSpriteDraw) *CachedLayer {
+func BuildCachedLayer(name string, draws []CachedSpriteDraw, isStatic bool) *CachedLayer {
 	bitmap := &core.Bitmap{
 		Name:   name,
 		W:      drivers.VW,
@@ -55,7 +56,8 @@ func BuildCachedLayer(name string, draws []CachedSpriteDraw) *CachedLayer {
 			targetPosition: core.Point{X: 0, Y: 0},
 			moving:         false,
 		},
-		sprite: sprite,
+		sprite:   sprite,
+		isStatic: isStatic,
 	}
 }
 

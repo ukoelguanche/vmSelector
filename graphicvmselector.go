@@ -36,6 +36,7 @@ func Init() {
 
 	renderables = append(renderables, manager.SetupSonic(sprites))
 	renderables = manager.SetupHud(sprites, renderables)
+	renderables = manager.SetupStressSprites(sprites, renderables, util.ContextStorage.StressSprites)
 
 	setupStaticBaseFrame()
 }

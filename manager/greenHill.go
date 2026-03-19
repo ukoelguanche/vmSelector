@@ -18,13 +18,9 @@ func SetupGreenHillBackground(sprites core.Sprites, renderables []interfaces.Ren
 			Frame:    sprites.Sprites["GreenHillBackgroundLayer4"].GetFrame(0),
 			Position: core.Point{X: 0, Y: 64},
 		},
-		{
-			Sprite:   sprites.Sprites["GreenHillBackgroundLayer6"],
-			Frame:    sprites.Sprites["GreenHillBackgroundLayer6"].GetFrame(0),
-			Position: core.Point{X: 0, Y: 152},
-		},
-	}))
+	}, true))
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer5", "idle", core.Point{X: 0, Y: 112}))
+	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "GreenHillBackgroundLayer6", "idle", core.Point{X: 0, Y: 152}))
 
 	return renderables
 }
@@ -75,7 +71,7 @@ func SetupGreenHillForeground(sprites core.Sprites, renderables []interfaces.Ren
 			Frame:    sprites.Sprites["GreenHillForeground"].GetFrame(0),
 			Position: core.Point{X: 0, Y: 0},
 		},
-	}))
+	}, false))
 
 	return renderables
 }
