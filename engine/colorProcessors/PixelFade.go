@@ -42,7 +42,7 @@ func (pf *PixelFade) Transform(pixels []byte) {
 			ii := i % pf.GridSize
 			jj := j % pf.GridSize
 
-			if jj <= step-ii {
+			if jj >= step-ii {
 				pixelPos := (i*drivers.VW + j) * 4
 				pixels[pixelPos] = 0
 				pixels[pixelPos+1] = 0

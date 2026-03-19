@@ -50,6 +50,10 @@ func SetupHud(sprites core.Sprites, renderables []interfaces.Renderable) []inter
 
 	drivers.GlobalKeyboard.EventsHandler = KeyboardEventsHandler{}
 
+	blackScreen = colorProcessors.BuildBlackScreen(500 * time.Millisecond)
+	blackScreen.OnComplete = InitialBlackScreenComplete
+	drivers.GlobalDisplay.AddTransformer(blackScreen)
+
 	return renderables
 }
 
@@ -147,6 +151,17 @@ func VMSelected(renderable interfaces.Animatable) {
 	//pixelFade = engine.BuildReversePixelFade(8, 700*time.Millisecond)
 	drivers.GlobalDisplay.AddTransformer(pixelFade)
 	// pixelFade.OnComplete = PixelFadeComplete
+}
+
+func InitialBlackScreenComplete() {
+	drivers.GlobalDisplay.RemoveTransformer(blackScreen)
+	pixelFade = colorProcessors.BuildReversePixelFade(8, 700*time.Millisecond)
+	pixelFade.OnComplete = InitialPixelFadeComplete
+	drivers.GlobalDisplay.AddTransformer(pixelFade)
+}
+
+func InitialPixelFadeComplete() {
+	drivers.GlobalDisplay.RemoveTransformer(pixelFade)
 }
 
 func PixelFadeComplete() {
