@@ -35,14 +35,32 @@ func BuildPixelFadeWithDirection(gridSize int, duration time.Duration, reverse b
 }
 
 func (pf *PixelFade) Transform(pixels []byte) {
-	step := pf.getTransformStep()
+	elapsed := time.Since(pf.StartTime)
+	t := elapsed.Seconds() / pf.Duration.Seconds()
+
+	if t > 1.0 {
+		t = 1.0
+	}
+
+	if t >= 1.0 {
+		pf.completed = true
+	}
+
+	step := int(float64(pf.GridSize) * 2 * t)
 
 	for i := 0; i < drivers.VH; i++ {
 		for j := 0; j < drivers.VW; j++ {
 			ii := i % pf.GridSize
 			jj := j % pf.GridSize
 
-			if jj >= step-ii {
+			threshold := step - ii
+
+			shouldFade := jj <= threshold
+			if pf.Reverse {
+				shouldFade = jj >= threshold
+			}
+
+			if shouldFade {
 				pixelPos := (i*drivers.VW + j) * 4
 				pixels[pixelPos] = 0
 				pixels[pixelPos+1] = 0
@@ -54,26 +72,6 @@ func (pf *PixelFade) Transform(pixels []byte) {
 	if pf.completed {
 		pf.Complete()
 	}
-}
-
-func (pf *PixelFade) getTransformStep() int {
-	elapsed := time.Since(pf.StartTime)
-	duration := pf.Duration
-
-	t := elapsed.Seconds() / duration.Seconds()
-
-	if t > 1.0 {
-		t = 1.0
-	}
-
-	start := 0.0
-	target := float64(pf.GridSize) * 2
-
-	if t >= 1.0 {
-		pf.completed = true
-	}
-
-	return int(float32(start + (target-start)*t))
 }
 
 func (pf *PixelFade) IsFinished() bool {
