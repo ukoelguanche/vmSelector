@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"apodeiktikos.com/fbtest/engine"
+	"apodeiktikos.com/fbtest/engine/colorProcessors"
 	"apodeiktikos.com/fbtest/interfaces"
 	"apodeiktikos.com/fbtest/model"
 	"apodeiktikos.com/fbtest/util"
@@ -24,6 +25,8 @@ var menuStatus = "waiting"
 
 var textHeight float64
 var verticalCenter float64
+var pixelFade *colorProcessors.PixelFade
+var blackScreen *colorProcessors.BlackScreen
 
 func SetupHud(sprites core.Sprites, renderables []interfaces.Renderable) []interfaces.Renderable {
 	for y := 0; y < 13; y++ {
@@ -139,10 +142,20 @@ func OnRingAnimationComplete(renderable interfaces.Animatable) {
 }
 
 func VMSelected(renderable interfaces.Animatable) {
-	myTransformer := &engine.PixelFade{
-		GridSize:  8,
-		StartTime: time.Now(),
-		Duration:  700 * time.Millisecond,
-	}
-	drivers.GlobalDisplay.AddTransformer(myTransformer)
+	ring.SetOnAnimationComplete(nil)
+	pixelFade = colorProcessors.BuildPixelFade(8, 700*time.Millisecond)
+	//pixelFade = engine.BuildReversePixelFade(8, 700*time.Millisecond)
+	drivers.GlobalDisplay.AddTransformer(pixelFade)
+	// pixelFade.OnComplete = PixelFadeComplete
+}
+
+func PixelFadeComplete() {
+	drivers.GlobalDisplay.RemoveTransformer(pixelFade)
+	blackScreen = colorProcessors.BuildBlackScreen(700 * time.Millisecond)
+	blackScreen.OnComplete = BlackScreenComplete
+	drivers.GlobalDisplay.AddTransformer(blackScreen)
+}
+
+func BlackScreenComplete() {
+	drivers.GlobalDisplay.RemoveTransformer(blackScreen)
 }
