@@ -16,6 +16,7 @@ import (
 const TARGET_FPS = 25
 const FRAME_DELAY = time.Second / TARGET_FPS
 const SPRITES_FILE = "./assets/sprites/Sprites.json"
+const INDEXED_METADATA_FILE = "./assets/indexed/metadata.json"
 
 var renderables []interfaces.Renderable
 var dynamicRenderables []interfaces.Renderable
@@ -26,7 +27,7 @@ func Init() {
 	drivers.InitKeyboard()
 
 	var sprites core.Sprites
-	loaders.LoadSprites(SPRITES_FILE, &sprites)
+	loaders.LoadIndexedSprites(SPRITES_FILE, INDEXED_METADATA_FILE, &sprites)
 
 	renderables = make([]interfaces.Renderable, 0)
 

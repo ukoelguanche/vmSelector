@@ -1,0 +1,43 @@
+{
+  "spritesFile": "./assets/sprites/Sprites.json",
+  "palettePath": "assets/indexed/palette.pal",
+  "paletteType": "rgb24",
+  "colorCount": 128,
+  "bitmaps": [
+    {
+      "name": "GreenHillBack1",
+      "sourcePath": "./assets/sprites/GreenHillBack1.png",
+      "width": 1243,
+      "height": 64,
+      "indexedPath": "assets/indexed/GreenHillBack1.idx"
+    },
+    {
+      "name": "GreenHillBack2",
+      "sourcePath": "./assets/sprites/GreenHillBack2.png",
+      "width": 320,
+      "height": 208,
+      "indexedPath": "assets/indexed/GreenHillBack2.idx"
+    },
+    {
+      "name": "greenHill",
+      "sourcePath": "./assets/sprites/GreenHill.png",
+      "width": 752,
+      "height": 427,
+      "indexedPath": "assets/indexed/greenHill.idx"
+    },
+    {
+      "name": "hud",
+      "sourcePath": "./assets/sprites/HUD.png",
+      "width": 306,
+      "height": 217,
+      "indexedPath": "assets/indexed/hud.idx"
+    },
+    {
+      "name": "sonic",
+      "sourcePath": "./assets/sprites/Sonic.png",
+      "width": 300,
+      "height": 38,
+      "indexedPath": "assets/indexed/sonic.idx"
+    }
+  ]
+}

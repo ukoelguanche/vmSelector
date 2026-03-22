@@ -4,6 +4,8 @@ go 1.25.3
 
 require github.com/ukoelguanche/graphicsengine v0.1.3
 
+replace github.com/ukoelguanche/graphicsengine => ../graphicsengine
+
 require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/veandco/go-sdl2 v0.4.40 // indirect
