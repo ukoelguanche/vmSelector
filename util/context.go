@@ -7,14 +7,15 @@ import (
 )
 
 type Context struct {
-	DevMode       string
-	StressSprites int
-	GpuString     string
-	CentineVMName string
-	Port          string
-	PveHosst      string
-	PveTokenId    string
-	PveSecret     string
+	DevMode         string
+	StressSprites   int
+	UseCachedLayers bool
+	GpuString       string
+	CentineVMName   string
+	Port            string
+	PveHosst        string
+	PveTokenId      string
+	PveSecret       string
 }
 
 var ContextStorage = &Context{}
@@ -25,6 +26,7 @@ func LoadContext() {
 	ContextStorage = &Context{
 		GetEnvOrDefault("DEV_MODE", "false"),
 		GetEnvIntOrDefault("STRESS_SPRITES", 0),
+		GetEnvOrDefault("USE_CACHED_LAYERS", "false") == "true",
 		Getenv("GPU_STRING"),
 		Getenv("CENTINEL_VM_NAME"),
 		Getenv("PORT"),

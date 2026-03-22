@@ -5,6 +5,7 @@ import (
 	_ "image/png"
 	"io"
 	"log"
+	"os"
 	"runtime"
 	"runtime/debug"
 	"unsafe"
@@ -12,6 +13,7 @@ import (
 	"apodeiktikos.com/fbtest/engine"
 	"apodeiktikos.com/fbtest/interfaces"
 	"apodeiktikos.com/fbtest/manager"
+	"apodeiktikos.com/fbtest/util"
 	"github.com/ukoelguanche/graphicsengine/core"
 	"github.com/ukoelguanche/graphicsengine/loaders"
 )
@@ -30,6 +32,7 @@ type memoryTotals struct {
 
 func main() {
 	log.SetOutput(io.Discard)
+	util.ContextStorage.UseCachedLayers = os.Getenv("USE_CACHED_LAYERS") == "true"
 	runtime.GC()
 	debug.FreeOSMemory()
 
