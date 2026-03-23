@@ -27,7 +27,7 @@ func (l *CachedLayer) Draw(d interfaces.Drawer) {
 	d.DrawSpriteRect(l.sprite, l.sprite.Frames[0], l.position)
 }
 
-func (l *CachedLayer) Update()        {}
+func (l *CachedLayer) Update()        { l.UpdatePosition(l) }
 func (l *CachedLayer) IsStatic() bool { return l.isStatic }
 
 func BuildCachedLayer(name string, draws []CachedSpriteDraw, isStatic bool) *CachedLayer {

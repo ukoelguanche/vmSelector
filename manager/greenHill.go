@@ -12,6 +12,13 @@ import (
 
 var clouds []*engine.SpriteInstance
 
+type movableRenderable interface {
+	interfaces.Renderable
+	MoveTo(target core.Point, duration time.Duration)
+}
+
+var foreground movableRenderable
+
 func SetupGreenHillBackground(sprites core.Sprites, renderables []interfaces.Renderable) []interfaces.Renderable {
 	renderables = append(renderables, buildGreenHillLayer("GreenHillStaticBackground", []engine.CachedSpriteDraw{
 		{
@@ -46,14 +53,21 @@ func SetupClouds(sprites core.Sprites, renderables []interfaces.Renderable) []in
 }
 
 func SetupGreenHillForeground(sprites core.Sprites, renderables []interfaces.Renderable) []interfaces.Renderable {
-	renderables = append(renderables, buildGreenHillLayer("GreenHillStaticForeground", []engine.CachedSpriteDraw{
+	layer := buildGreenHillLayer("GreenHillStaticForeground", []engine.CachedSpriteDraw{
 		{
 			Sprite:   sprites.Sprites["GreenHillForeground"],
 			Frame:    sprites.Sprites["GreenHillForeground"].GetFrame(0),
 			Position: core.Point{X: 0, Y: 0},
 		},
-	}, false))
+	}, false)
 
+	var ok bool
+	foreground, ok = layer.(movableRenderable)
+	if !ok {
+		panic("green hill foreground layer is not movable")
+	}
+
+	renderables = append(renderables, foreground)
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "Flower1", "idle", core.Point{X: 154, Y: 90}))
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "Flower2", "idle", core.Point{X: -5, Y: 115}))
 	renderables = append(renderables, engine.BuildSpriteInstance(sprites, "Flower2", "idle", core.Point{X: 220, Y: 115}))
@@ -78,4 +92,14 @@ func OnCloudMovementComplete(sprite interfaces.Movable) {
 	startPosition := cloud.GetPosition().SetX(0)
 	cloud.SetPosition(startPosition)
 	cloud.MoveTo(startPosition.SetX(-980), cloud.GetDuration())
+}
+
+func ForegroundStartSonicJump() {
+	foreground.SetOnMovementComplete(ForegroundJump1)
+	foreground.MoveTo(foreground.GetPosition().IncY(8), jumpDuration)
+}
+
+func ForegroundJump1(saa interfaces.Movable) {
+	foreground.SetOnMovementComplete(nil)
+	foreground.MoveTo(foreground.GetPosition().IncY(-8), jumpDuration)
 }

@@ -15,11 +15,14 @@ type DrawLayer struct {
 func (l *DrawLayer) GetSprite() *core.Sprite                 { return nil }
 func (l *DrawLayer) GetEaseFunction() func(float64) float64  { return l.easeFunc }
 func (l *DrawLayer) SetEaseFunction(f func(float64) float64) { l.easeFunc = f }
-func (l *DrawLayer) Update()                                 {}
+func (l *DrawLayer) Update()                                 { l.UpdatePosition(l) }
 func (l *DrawLayer) IsStatic() bool                          { return l.isStatic }
 func (l *DrawLayer) Draw(d interfaces.Drawer) {
 	for _, draw := range l.draws {
-		d.DrawSpriteRect(draw.Sprite, draw.Frame, draw.Position)
+		d.DrawSpriteRect(draw.Sprite, draw.Frame, core.Point{
+			X: draw.Position.X + l.position.X,
+			Y: draw.Position.Y + l.position.Y,
+		})
 	}
 }
 

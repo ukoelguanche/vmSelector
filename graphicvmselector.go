@@ -87,6 +87,7 @@ func handleKeyboardInput() bool {
 		manager.SelectMenuOption()
 	} else if kbd == drivers.KBD_SPACE {
 		manager.SonicStartJump()
+		// manager.ForegroundStartSonicJump()
 	} else if kbd == drivers.KBD_UP {
 		inc = -1
 	} else if kbd == drivers.KBD_DOWN {
